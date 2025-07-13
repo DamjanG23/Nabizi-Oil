@@ -1,0 +1,146 @@
+/* Reset default browser styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body,
+html {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* Main container - takes full height and creates column layout */
+.app-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background-color: #f5f5f5;
+  font-family: Arial, sans-serif;
+  overflow: hidden;
+}
+
+/* Logo section at the top */
+.logo-section {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+  background-color: #2c3e50;
+  color: white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.logo {
+  font-size: 24px;
+  font-weight: bold;
+  letter-spacing: 2px;
+}
+
+/* Container for the scrollable fuel list */
+.fuel-list-container {
+  flex: 1;
+  overflow: hidden;
+  padding: 20px;
+  min-height: 0;
+}
+
+.fuel-list {
+  height: 100%;
+  overflow-y: auto;
+  padding-right: 10px;
+}
+
+/* Individual fuel item styling */
+.fuel-item {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 15px;
+  padding: 15px;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease;
+}
+
+.fuel-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* Input field styling */
+.fuel-name-input,
+.fuel-price-input {
+  padding: 12px;
+  border: 2px solid #ddd;
+  border-radius: 6px;
+  font-size: 16px;
+  transition: border-color 0.3s ease;
+}
+
+.fuel-name-input:focus,
+.fuel-price-input:focus {
+  outline: none;
+  border-color: #3498db;
+}
+
+.fuel-name-input {
+  flex: 2;
+}
+
+.fuel-price-input {
+  flex: 1;
+  text-align: right;
+}
+
+/* Send button section */
+.send-section {
+  padding: 20px;
+  background-color: white;
+  border-top: 1px solid #ddd;
+  display: flex;
+  justify-content: center;
+}
+
+.send-button {
+  background-color: #27ae60;
+  color: white;
+  border: none;
+  padding: 15px 40px;
+  font-size: 18px;
+  font-weight: bold;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.send-button:hover {
+  background-color: #219a52;
+  transform: translateY(-2px);
+}
+
+.send-button:active {
+  transform: translateY(0);
+}
+
+/* Scrollbar styling for webkit browsers */
+.fuel-list::-webkit-scrollbar {
+  width: 8px;
+}
+
+.fuel-list::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+.fuel-list::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 10px;
+}
+
+.fuel-list::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
