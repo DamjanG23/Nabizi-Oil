@@ -1,19 +1,6 @@
 const electron = require("electron");
 
 electron.contextBridge.exposeInMainWorld("electron", {
-  // ---------------------------------------------------------------------------
-  // SCORE & MATCH DATA
-  // ---------------------------------------------------------------------------
-
-  getMatchSeconds: (callback) =>
-    ipcOn("getMatchSeconds", (seconds) => {
-      callback(seconds);
-    }),
-
-  getScoreboardState: () => {
-    return ipcInvoke("getScoreboardState");
-  },
-
   getConfig: () => {
     return ipcInvoke("getConfig");
   },
@@ -25,54 +12,6 @@ electron.contextBridge.exposeInMainWorld("electron", {
   onMatchCreated: (callback) =>
     ipcOn("onMatchCreated", (currentMatch) => {
       callback(currentMatch);
-    }),
-
-  // ---------------------------------------------------------------------------
-  // SCOREBOARD WINDOW MANAGEMENT
-  // ---------------------------------------------------------------------------
-
-  getIsScoreboardOpen: () => {
-    return ipcInvoke("getIsScoreboardOpen");
-  },
-
-  onScoreboardWindowClosed: (callback) =>
-    ipcOn("onScoreboardWindowClosed", (isClosed) => {
-      callback(isClosed);
-    }),
-
-  showScoreboardWindow: () => {
-    return ipcInvoke("showScoreboardWindow");
-  },
-
-  closeScoreboardWindow: () => {
-    return ipcInvoke("closeScoreboardWindow");
-  },
-
-  onScoreboardWindowOpened: (callback) =>
-    ipcOn("onScoreboardWindowOpened", (isOpened) => {
-      callback(isOpened);
-    }),
-
-  toggleScoreboardFullscreen: () => {
-    return ipcInvoke("toggleScoreboardFullscreen");
-  },
-
-  onScoreboardFullscreenChange: (callback) =>
-    ipcOn("onScoreboardFullscreenChange", (isFullscreen) => {
-      callback(isFullscreen);
-    }),
-
-  // ---------------------------------------------------------------------------
-  // MAIN WINDOW MANAGEMENT
-  // ---------------------------------------------------------------------------
-
-  toggleMainFullscreen: () => {
-    return ipcInvoke("toggleMainFullscreen");
-  },
-
-  onMainFullscreenChange: (callback) =>
-    ipcOn("onMainFullscreenChange", (isFullscreen) => {
-      callback(isFullscreen);
     }),
 } satisfies Window["electron"]);
 

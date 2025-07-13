@@ -5,7 +5,7 @@ export function createMenu(window: BrowserWindow) {
   Menu.setApplicationMenu(
     Menu.buildFromTemplate([
       {
-        label: "Scoreboard",
+        label: "Nabizi-Oil",
         type: "submenu",
         submenu: [
           {

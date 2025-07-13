@@ -1,7 +1,7 @@
 import { app, BrowserWindow, screen } from "electron";
 import path from "path";
 import { getPreloadPath } from "../utils/pathResolver.js";
-import { ipcWebContentsSend, isDev } from "../utils/util.js";
+import { isDev } from "../utils/util.js";
 import { showCloseAppDialog } from "../services/windowService.js";
 
 export function initiateMainWindow(): BrowserWindow {
@@ -22,21 +22,12 @@ export function initiateMainWindow(): BrowserWindow {
 
   if (isDev()) {
     mainWindow.loadURL("http://localhost:5123");
-    //mainWindow.webContents.openDevTools();
   } else {
     mainWindow.loadFile(path.join(app.getAppPath(), "/dist-react/index.html"));
   }
 
   mainWindow.on("close", (e) => {
     showCloseAppDialog(mainWindow, e);
-  });
-
-  mainWindow.on("enter-full-screen", () => {
-    ipcWebContentsSend("onMainFullscreenChange", mainWindow.webContents, true);
-  });
-
-  mainWindow.on("leave-full-screen", () => {
-    ipcWebContentsSend("onMainFullscreenChange", mainWindow.webContents, false);
   });
 
   return mainWindow;
