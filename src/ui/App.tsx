@@ -1,42 +1,24 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import "./styles/App.css";
 
-// Define the type for our fuel items
-interface FuelItem {
-  id: number;
-  name: string;
-  price: number;
-}
-
 // Demo array of fuel items (you can replace this with your actual data)
-const demoFuelList: FuelItem[] = [
-  { id: 1, name: "Gasoline", price: 3.45 },
-  { id: 2, name: "Diesel", price: 3.89 },
-  { id: 3, name: "Premium", price: 3.75 },
-  { id: 4, name: "E85", price: 2.95 },
-  { id: 5, name: "Kerosene", price: 4.2 },
-  { id: 6, name: "Gasoline", price: 3.45 },
-  { id: 7, name: "Diesel", price: 3.89 },
-  { id: 8, name: "Premium", price: 3.75 },
-  { id: 9, name: "E85", price: 2.95 },
-  { id: 10, name: "Kerosene", price: 4.2 },
-];
+const demoFuelList: FuelItem[] = [{ id: 0, name: "0", price: 0 }];
 
 function App() {
-  //const [currentMatch, setCurrentMatch] = useState<Match | null>(null);
-
-  // useEffect(() => {
-  //   const unsubscribe = window.electron.onMatchCreated((currentMatch) => {
-  //     console.log(
-  //       `Match with name "${currentMatch.matchName}" was saved to backend...`
-  //     );
-  //     setCurrentMatch(currentMatch);
-  //   });
-
-  //   return unsubscribe;
-  // }, []);
-
   const [fuelList, setFuelList] = useState<FuelItem[]>(demoFuelList);
+
+  useEffect(() => {
+    window.electron.loadConfig();
+  }, []);
+
+  useEffect(() => {
+    const unsubscribe = window.electron.onFuelItemsLoaded((fuelItems) => {
+      console.log(`Fuel Items recieved by BE...`);
+      setFuelList(fuelItems);
+    });
+
+    return unsubscribe;
+  }, []);
 
   // Function to handle changes in fuel name
   const handleNameChange = (id: number, newName: string) => {

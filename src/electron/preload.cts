@@ -13,6 +13,17 @@ electron.contextBridge.exposeInMainWorld("electron", {
     ipcOn("onMatchCreated", (currentMatch) => {
       callback(currentMatch);
     }),
+
+  // REAL FUNCTIONS ----------------------------------------------------------
+
+  onFuelItemsLoaded: (callback) =>
+    ipcOn("onFuelItemsLoaded", (fuelItems) => {
+      callback(fuelItems);
+    }),
+
+  loadConfig: () => {
+    return ipcInvoke("loadConfig");
+  },
 } satisfies Window["electron"]);
 
 function ipcInvoke<Key extends keyof EventPayloadMaping>(
