@@ -9,11 +9,6 @@ electron.contextBridge.exposeInMainWorld("electron", {
     ipcSend("createNewMatch", matchName);
   },
 
-  onMatchCreated: (callback) =>
-    ipcOn("onMatchCreated", (currentMatch) => {
-      callback(currentMatch);
-    }),
-
   // REAL FUNCTIONS ----------------------------------------------------------
 
   onFuelItemsLoaded: (callback) =>

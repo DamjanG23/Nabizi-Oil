@@ -6,12 +6,10 @@ export function getConfig() {
   return { config };
 }
 
-export function createNewMatch(matchName: string, window: BrowserWindow) {
+export function createNewMatch(matchName: string) {
   const newMatch: Match = { matchName: matchName };
 
   console.log("Match ?saved? on back end:", newMatch);
-
-  ipcWebContentsSend("onMatchCreated", window.webContents, newMatch);
 }
 
 export function loadConfig(window: BrowserWindow): void {

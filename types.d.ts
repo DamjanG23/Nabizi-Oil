@@ -26,7 +26,6 @@ type FuelItem = {
 type EventPayloadMaping = {
   getConfig: MatchConfig;
   createNewMatch: string;
-  onMatchCreated: Match;
 
   onFuelItemsLoaded: FuelItem[];
   loadConfig: void;
@@ -39,10 +38,6 @@ interface Window {
     getConfig: () => Promise<MatchConfig>;
 
     createNewMatch: (matchName: string) => void;
-
-    onMatchCreated: (
-      callback: (currentMatch: Match) => void
-    ) => UnsubscribeFunction;
 
     // Real Functions ----------------------------------------------------------------------------
     onFuelItemsLoaded: (

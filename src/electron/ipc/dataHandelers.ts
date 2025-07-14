@@ -16,6 +16,6 @@ export function setupDataHandelers(mainWindow: BrowserWindow) {
   });
 
   ipcMainOn("createNewMatch", (matchName) => {
-    createNewMatch(matchName, mainWindow);
+    createNewMatch(matchName);
   });
 }
