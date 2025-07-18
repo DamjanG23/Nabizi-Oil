@@ -1,11 +1,10 @@
 import { useEffect, useState } from "react";
 import "./styles/App.css";
-
-// Demo array of fuel items (you can replace this with your actual data)
-const demoFuelList: FuelItem[] = [{ id: 0, name: "0", price: 0 }];
+import { LogoSelection } from "./components/LogoSelection";
+import { BottomSection } from "./components/BottomSection";
 
 function App() {
-  const [fuelList, setFuelList] = useState<FuelItem[]>(demoFuelList);
+  const [fuelList, setFuelList] = useState<FuelItem[]>([]);
 
   useEffect(() => {
     window.electron.loadConfig();
@@ -13,7 +12,6 @@ function App() {
 
   useEffect(() => {
     const unsubscribe = window.electron.onFuelItemsLoaded((fuelItems) => {
-      console.log(`Fuel Items recieved by BE...`);
       setFuelList(fuelItems);
     });
 
@@ -39,20 +37,9 @@ function App() {
     );
   };
 
-  // Function to handle send button click
-  const handleSend = () => {
-    console.log("Fuel data to send:", fuelList);
-    // Here you would typically send the data to your electron backend
-    // For now, we'll just log it to console
-    alert("Data ready to send! Check console for details.");
-  };
-
   return (
     <div className="app-container">
-      {/* Logo section at the top */}
-      <div className="logo-section">
-        <div className="logo">FUEL MANAGER</div>
-      </div>
+      <LogoSelection></LogoSelection>
 
       {/* Scrollable list of fuel items */}
       <div className="fuel-list-container">
@@ -80,12 +67,7 @@ function App() {
         </div>
       </div>
 
-      {/* Send button at the bottom */}
-      <div className="send-section">
-        <button className="send-button" onClick={handleSend}>
-          Send Data
-        </button>
-      </div>
+      <BottomSection fuelList={fuelList} />
     </div>
   );
 }

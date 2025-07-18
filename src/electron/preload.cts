@@ -19,6 +19,23 @@ electron.contextBridge.exposeInMainWorld("electron", {
   loadConfig: () => {
     return ipcInvoke("loadConfig");
   },
+
+  getConfigPath: () => {
+    return ipcInvoke("getConfigPath");
+  },
+
+  selectConfigPath: () => {
+    return ipcInvoke("selectConfigPath");
+  },
+
+  onConfigPathChanged: (callback) =>
+    ipcOn("onConfigPathChanged", (configPath) => {
+      callback(configPath);
+    }),
+
+  setConfigPathToDefault: () => {
+    return ipcInvoke("setConfigPathToDefault");
+  },
 } satisfies Window["electron"]);
 
 function ipcInvoke<Key extends keyof EventPayloadMaping>(

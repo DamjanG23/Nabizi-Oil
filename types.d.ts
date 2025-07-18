@@ -23,12 +23,20 @@ type FuelItem = {
   price: number;
 };
 
+type ConfigPathData = {
+  configPath: string;
+};
+
 type EventPayloadMaping = {
   getConfig: MatchConfig;
   createNewMatch: string;
 
   onFuelItemsLoaded: FuelItem[];
   loadConfig: void;
+  getConfigPath: string | null;
+  selectConfigPath: void;
+  onConfigPathChanged: string;
+  setConfigPathToDefault: void;
 };
 
 type UnsubscribeFunction = () => void;
@@ -45,5 +53,15 @@ interface Window {
     ) => UnsubscribeFunction;
 
     loadConfig: () => Promise<void>;
+
+    getConfigPath: () => Promise<string | null>;
+
+    selectConfigPath: () => Promise<void>;
+
+    onConfigPathChanged: (
+      callback: (congifPath: string) => void
+    ) => UnsubscribeFunction;
+
+    setConfigPathToDefault: () => Promise<void>;
   };
 }
