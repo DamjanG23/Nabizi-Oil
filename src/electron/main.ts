@@ -13,15 +13,18 @@ app.on("ready", () => {
 
   initiateConfigPathIfUnavailable(mainWindow);
   const configDirPath = getConfigPath();
-
   //initiateConfigFileIfUnavaiable(configDirPath);
 
-  readConfigFromDirectory(configDirPath === null ? "" : configDirPath).then(
-    (config: Config) => {
-      console.log(config);
+  readConfigFromDirectory(configDirPath === null ? "" : configDirPath)
+    .then((config: Config) => {
+      console.log("Config loaded successfully:", config);
       setupIPC(mainWindow, configDirPath, config);
-    }
-  );
+    })
+    .catch((error) => {
+      console.error("Failed to load config:", error);
+      const fallbackConfig: Config = {};
+      setupIPC(mainWindow, configDirPath, fallbackConfig);
+    });
 
   createMenu(mainWindow);
 });

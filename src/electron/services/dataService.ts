@@ -116,6 +116,8 @@ export async function readConfigFromDirectory(directoryPath: string) {
     return config;
   } catch {
     throw new Error(`Error reading config...`);
+    const emptyConfig: Config = {};
+    return emptyConfig;
   }
 }
 
