@@ -3,13 +3,19 @@ import {
   createNewMatch,
   getConfig,
   getConfigPath,
+  getFuelItems,
+  getLogoBase64,
   loadConfig,
   selectConfigPath,
   setConfigPathToDefault,
 } from "../services/dataService.js";
 import { ipcMainHandle, ipcMainOn } from "../utils/util.js";
 
-export function setupDataHandelers(mainWindow: BrowserWindow) {
+export function setupDataHandelers(
+  mainWindow: BrowserWindow,
+  configDirPath: string | null,
+  config: Config
+) {
   ipcMainHandle("getConfig", () => {
     return getConfig();
   });
@@ -32,5 +38,13 @@ export function setupDataHandelers(mainWindow: BrowserWindow) {
 
   ipcMainHandle("setConfigPathToDefault", () => {
     return setConfigPathToDefault(mainWindow);
+  });
+
+  ipcMainHandle("getLogoBase64", () => {
+    return getLogoBase64(configDirPath, config.gasStationLogo);
+  });
+
+  ipcMainHandle("getFuelItems", () => {
+    return getFuelItems(config);
   });
 }

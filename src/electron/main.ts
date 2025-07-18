@@ -19,11 +19,11 @@ app.on("ready", () => {
   readConfigFromDirectory(configDirPath === null ? "" : configDirPath).then(
     (config: Config) => {
       console.log(config);
+      setupIPC(mainWindow, configDirPath, config);
     }
   );
 
   createMenu(mainWindow);
-  setupIPC(mainWindow);
 });
 
 app.on("window-all-closed", () => {

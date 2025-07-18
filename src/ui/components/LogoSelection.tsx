@@ -1,9 +1,17 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import "../styles/App.css";
 
 export function LogoSelection() {
-  //const [logo, setLogo] = useState<string | undefined>();
-  const [logo] = useState<string | undefined>();
+  useEffect(() => {
+    const fetchLogo = async () => {
+      const logoBase64 = await window.electron.getLogoBase64();
+      setLogo(logoBase64 ?? undefined);
+    };
+
+    fetchLogo();
+  }, []);
+
+  const [logo, setLogo] = useState<string | undefined>();
 
   const isLogoLoaded = logo !== undefined;
 

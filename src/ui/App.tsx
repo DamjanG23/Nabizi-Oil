@@ -11,11 +11,22 @@ function App() {
   }, []);
 
   useEffect(() => {
-    const unsubscribe = window.electron.onFuelItemsLoaded((fuelItems) => {
-      setFuelList(fuelItems);
-    });
+    const loadFuelItems = async () => {
+      try {
+        const fuelNames = await window.electron.getFuelItems();
+        // Convert string[] to FuelItem[] with generated IDs and default prices
+        const fuelItems: FuelItem[] = fuelNames.map((name, index) => ({
+          id: index + 1,
+          name: name,
+          price: 0,
+        }));
+        setFuelList(fuelItems);
+      } catch (error) {
+        console.error("Failed to load fuel items:", error);
+      }
+    };
 
-    return unsubscribe;
+    loadFuelItems();
   }, []);
 
   // Function to handle changes in fuel name
@@ -52,6 +63,7 @@ function App() {
                 value={item.name}
                 onChange={(e) => handleNameChange(item.id, e.target.value)}
                 placeholder="Fuel Name"
+                disabled
               />
               <input
                 type="number"

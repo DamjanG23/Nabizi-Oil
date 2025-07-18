@@ -36,6 +36,14 @@ electron.contextBridge.exposeInMainWorld("electron", {
   setConfigPathToDefault: () => {
     return ipcInvoke("setConfigPathToDefault");
   },
+
+  getLogoBase64: () => {
+    return ipcInvoke("getLogoBase64");
+  },
+
+  getFuelItems: () => {
+    return ipcInvoke("getFuelItems");
+  },
 } satisfies Window["electron"]);
 
 function ipcInvoke<Key extends keyof EventPayloadMaping>(

@@ -27,11 +27,6 @@ export function loadConfig(window: BrowserWindow): void {
     { id: 3, name: "Premium", price: 3.75 },
     { id: 4, name: "E85", price: 2.95 },
     { id: 5, name: "Kerosene", price: 4.2 },
-    { id: 6, name: "Gasoline", price: 3.45 },
-    { id: 7, name: "Diesel", price: 3.89 },
-    { id: 8, name: "Premium", price: 3.75 },
-    { id: 9, name: "E85", price: 2.95 },
-    { id: 10, name: "Kerosene", price: 4.2 },
   ];
 
   ipcWebContentsSend("onFuelItemsLoaded", window.webContents, demoFuelList);
@@ -190,4 +185,70 @@ function parseIniContent(content: string) {
   }
 
   return config;
+}
+
+export function getLogoBase64(
+  directoryPath: string | null,
+  logoFileName: string | undefined
+) {
+  try {
+    // Step 0: Check if parameters are provided
+    if (!directoryPath || !logoFileName) {
+      console.log("Directory path and logo filename are required");
+      return null;
+    }
+
+    // Step 1: Combine the directory path and filename to get the full file path
+    const fullPath = path.join(directoryPath, logoFileName);
+
+    // Step 2: Check if the file exists
+    if (!fs.existsSync(fullPath)) {
+      console.log(`Logo file not found at: ${fullPath}`);
+      return null;
+    }
+
+    // Step 3: Read the file as binary data
+    const fileBuffer = fs.readFileSync(fullPath);
+
+    // Step 4: Get the file extension to determine the MIME type
+    const fileExtension = path.extname(logoFileName).toLowerCase();
+
+    // Step 5: Determine the correct MIME type based on file extension
+    let mimeType;
+    switch (fileExtension) {
+      case ".png":
+        mimeType = "image/png";
+        break;
+      case ".jpg":
+      case ".jpeg":
+        mimeType = "image/jpeg";
+        break;
+      case ".gif":
+        mimeType = "image/gif";
+        break;
+      case ".svg":
+        mimeType = "image/svg+xml";
+        break;
+      case ".webp":
+        mimeType = "image/webp";
+        break;
+      default:
+        console.log(`Unsupported file type: ${fileExtension}`);
+        return null;
+    }
+
+    // Step 6: Convert the file buffer to base64 string
+    const base64String = fileBuffer.toString("base64");
+
+    // Step 7: Return the complete data URL
+    return `data:${mimeType};base64,${base64String}`;
+  } catch {
+    // Step 8: Handle any errors that might occur
+    console.error("Error reading logo file:");
+    return null;
+  }
+}
+
+export function getFuelItems(config: Config): string[] {
+  return config.fuelNames ? config.fuelNames : [];
 }

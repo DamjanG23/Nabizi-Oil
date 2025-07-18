@@ -37,6 +37,8 @@ type EventPayloadMaping = {
   selectConfigPath: void;
   onConfigPathChanged: string;
   setConfigPathToDefault: void;
+  getLogoBase64: string | null;
+  getFuelItems: string[];
 };
 
 type UnsubscribeFunction = () => void;
@@ -63,5 +65,9 @@ interface Window {
     ) => UnsubscribeFunction;
 
     setConfigPathToDefault: () => Promise<void>;
+
+    getLogoBase64: () => Promise<string | null>;
+
+    getFuelItems: () => Promise<string[]>;
   };
 }
