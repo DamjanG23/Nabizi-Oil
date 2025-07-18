@@ -2,11 +2,6 @@ import { useEffect, useRef, useState } from "react";
 import { SettingsDrawer } from "./SettingsDrawer";
 import { ConfigLocationDialog } from "./ConfigLocationDialog";
 
-interface FuelItem {
-  name: string;
-  price: number;
-}
-
 interface BottomSectionProps {
   fuelList: FuelItem[];
 }
@@ -19,6 +14,7 @@ export function BottomSection({ fuelList }: BottomSectionProps) {
   const handleSend = () => {
     console.log("Fuel data to send:", fuelList);
     alert("Data ready to send! Check console for details.");
+    window.electron.sendDataToScreen(fuelList);
   };
 
   const handleClickOutside = (event: MouseEvent) => {

@@ -254,3 +254,9 @@ export function getLogoBase64(
 export function getFuelItems(config: Config): string[] {
   return config.fuelNames ? config.fuelNames : [];
 }
+
+export function sendDataToScreen(fuelItems: FuelItem[]): void {
+  console.log(
+    "Demo send Data to screen... " + JSON.stringify(fuelItems, null, 2)
+  );
+}

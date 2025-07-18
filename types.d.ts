@@ -39,6 +39,7 @@ type EventPayloadMaping = {
   setConfigPathToDefault: void;
   getLogoBase64: string | null;
   getFuelItems: string[];
+  sendDataToScreen: FuelItem[];
 };
 
 type UnsubscribeFunction = () => void;
@@ -69,5 +70,7 @@ interface Window {
     getLogoBase64: () => Promise<string | null>;
 
     getFuelItems: () => Promise<string[]>;
+
+    sendDataToScreen: (fuelItems: FuelItem[]) => void;
   };
 }

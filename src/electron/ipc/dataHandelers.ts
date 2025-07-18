@@ -7,6 +7,7 @@ import {
   getLogoBase64,
   loadConfig,
   selectConfigPath,
+  sendDataToScreen,
   setConfigPathToDefault,
 } from "../services/dataService.js";
 import { ipcMainHandle, ipcMainOn } from "../utils/util.js";
@@ -46,5 +47,9 @@ export function setupDataHandelers(
 
   ipcMainHandle("getFuelItems", () => {
     return getFuelItems(config);
+  });
+
+  ipcMainOn("sendDataToScreen", (fuelItems) => {
+    sendDataToScreen(fuelItems);
   });
 }

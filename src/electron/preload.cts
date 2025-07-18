@@ -44,6 +44,10 @@ electron.contextBridge.exposeInMainWorld("electron", {
   getFuelItems: () => {
     return ipcInvoke("getFuelItems");
   },
+
+  sendDataToScreen: (fuelItems) => {
+    ipcSend("sendDataToScreen", fuelItems);
+  },
 } satisfies Window["electron"]);
 
 function ipcInvoke<Key extends keyof EventPayloadMaping>(
