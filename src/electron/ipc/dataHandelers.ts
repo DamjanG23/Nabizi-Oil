@@ -7,10 +7,10 @@ import {
   getLogoBase64,
   loadConfig,
   selectConfigPath,
-  sendDataToScreen,
   setConfigPathToDefault,
 } from "../services/dataService.js";
 import { ipcMainHandle, ipcMainOn } from "../utils/util.js";
+import { sendDataToScreen } from "../services/screenService.js";
 
 export function setupDataHandelers(
   mainWindow: BrowserWindow,
