@@ -50,6 +50,6 @@ export function setupDataHandelers(
   });
 
   ipcMainOn("sendDataToScreen", (fuelItems) => {
-    sendDataToScreen(fuelItems);
+    sendDataToScreen(fuelItems, config);
   });
 }

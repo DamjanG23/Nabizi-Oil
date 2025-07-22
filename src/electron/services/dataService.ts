@@ -121,12 +121,12 @@ export async function readConfigFromDirectory(directoryPath: string) {
   }
 }
 
-function parseIniContent(content: string) {
+function parseIniContent(content: string): Config {
   const config: Config = {};
   const lines = content.split("\n");
 
   // Store fuel names temporarily
-  const fuelNames = [];
+  const fuelNames: string[] = [];
 
   for (const line of lines) {
     const trimmedLine = line.trim();
@@ -147,6 +147,12 @@ function parseIniContent(content: string) {
     const cleanKey = key.trim();
     let value = valueParts.join("=").trim();
 
+    // --- New Change: Handle inline comments (like ';') ---
+    // This will strip out comments that appear after a value.
+    if (value.includes(";")) {
+      value = value.split(";")[0].trim();
+    }
+
     // Remove quotes if present
     if (
       (value.startsWith('"') && value.endsWith('"')) ||
@@ -157,6 +163,7 @@ function parseIniContent(content: string) {
 
     // Map ini keys to Config properties
     switch (cleanKey) {
+      // --- Existing Cases ---
       case "DisplayIPAddress":
         config.displayIpAddress = value;
         break;
@@ -172,6 +179,30 @@ function parseIniContent(content: string) {
       case "AdjustTime":
         config.adjustTime = value;
         break;
+
+      // --- New Cases for the added fields ---
+      case "ScreenWidth":
+        config.screenWidth = parseInt(value, 10);
+        break;
+      case "ScreenHeight":
+        config.screenHeight = parseInt(value, 10);
+        break;
+      case "CardType":
+        config.cardType = value;
+        break;
+      case "RowColumn":
+        config.rowColumn = value;
+        break;
+      case "DoubleSided":
+        config.doubleSided = value;
+        break;
+      case "FontName":
+        config.fontName = value;
+        break;
+      case "FontHeight":
+        config.fontHeight = parseInt(value, 10);
+        break;
+
       default:
         // Handle fuel names (Fuel1Name, Fuel2Name, etc.)
         if (cleanKey.startsWith("Fuel") && cleanKey.endsWith("Name")) {

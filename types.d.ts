@@ -15,6 +15,14 @@ type Config = {
   fuelNames?: string[];
   timeDisplayIpAddress?: string;
   adjustTime?: string;
+
+  screenWidth?: number;
+  screenHeight?: number;
+  cardType?: string;
+  rowColumn?: string;
+  doubleSided?: string;
+  fontName?: string;
+  fontHeight?: number;
 };
 
 type FuelItem = {

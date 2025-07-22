@@ -2,71 +2,67 @@ import { spawn } from "child_process";
 import path from "path";
 import { fileURLToPath } from "url";
 
-export type FuelItem = {
-  id: number;
-  name: string;
-  price: number;
-};
-
-export async function createScreen(): Promise<boolean> {
+export async function createScreenAndSend(ipAddress: string): Promise<boolean> {
   return new Promise((resolve, reject) => {
-    // Fix for ES modules - get current directory
     const __filename = fileURLToPath(import.meta.url);
     const __dirname = path.dirname(__filename);
-
-    // Path to your compiled wrapper
     const wrapperPath = path.join(
       __dirname,
       "../../native-wrapper/dll_wrapper.exe"
     );
 
-    console.log("Trying to run wrapper at:", wrapperPath); // Debug log
+    console.log("Sending to IP:", ipAddress);
 
     const process = spawn(wrapperPath);
     let output = "";
 
-    // Collect output from the C++ program
+    // THIS LINE IS ESSENTIAL
+    process.stdout.setEncoding("utf16le");
+
     process.stdout.on("data", (data) => {
-      output += data.toString();
+      output += data;
     });
 
     process.on("close", () => {
       try {
         const result = JSON.parse(output.trim());
         if (result.success) {
-          console.log("Screen created:", result.message);
+          console.log("✅", result.message);
           resolve(true);
         } else {
-          console.error("Screen creation failed:", result.error);
+          // This will now work correctly
+          console.error("❌", result.error);
           resolve(false);
         }
       } catch {
+        // The parsing error should be gone, but we keep this for safety
         reject(new Error("Failed to parse wrapper output: " + output));
       }
     });
 
     process.on("error", (err) => {
-      console.error("Process error:", err);
       reject(err);
     });
+
+    // We still send the IP address as before
+    process.stdin.write(ipAddress + "\n");
+    process.stdin.end();
   });
 }
 
-export async function sendDataToScreen(fuelItems: FuelItem[]): Promise<void> {
-  console.log(
-    "Attempting to send data to screen...",
-    JSON.stringify(fuelItems, null, 2)
-  );
+export async function sendDataToScreen(
+  fuelItems: FuelItem[],
+  config: Config
+): Promise<void> {
+  if (!config.displayIpAddress) {
+    console.error("❌ No displayIpAddress provided");
+    return;
+  }
 
   try {
-    const success = await createScreen();
-    if (success) {
-      console.log("✅ Screen connection successful!");
-      // We'll add the fuel data sending in the next step
-    } else {
-      console.log("❌ Screen connection failed");
-    }
+    await createScreenAndSend(config.displayIpAddress);
+    // Result will be logged by the service
   } catch (error) {
-    console.error("Error connecting to screen:", error);
+    console.error("Error:", error);
   }
 }
