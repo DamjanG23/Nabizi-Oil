@@ -11,32 +11,39 @@ export async function createScreenAndSend(ipAddress: string): Promise<boolean> {
       "../../native-wrapper/dll_wrapper.exe"
     );
 
-    console.log("Sending to IP:", ipAddress);
+    console.log("Spawning wrapper for IP:", ipAddress);
 
     const process = spawn(wrapperPath);
     let output = "";
 
-    // THIS LINE IS ESSENTIAL
+    // THIS LINE IS ESSENTIAL for reading the UTF-16 output from the C++ app
     process.stdout.setEncoding("utf16le");
 
     process.stdout.on("data", (data) => {
       output += data;
     });
 
-    process.on("close", () => {
+    process.on("close", (code) => {
+      // It's good practice to check the exit code
+      if (code !== 0) {
+        reject(
+          new Error(
+            `Wrapper process exited with code ${code}. Output: ${output}`
+          )
+        );
+        return;
+      }
       try {
         const result = JSON.parse(output.trim());
         if (result.success) {
-          console.log("✅", result.message);
+          console.log("✅ Wrapper success:", result.message);
           resolve(true);
         } else {
-          // This will now work correctly
-          console.error("❌", result.error);
+          console.error("❌ Wrapper error:", result.error);
           resolve(false);
         }
       } catch {
-        // The parsing error should be gone, but we keep this for safety
-        reject(new Error("Failed to parse wrapper output: " + output));
+        reject(new Error("Failed to parse wrapper JSON output: " + output));
       }
     });
 
@@ -44,7 +51,7 @@ export async function createScreenAndSend(ipAddress: string): Promise<boolean> {
       reject(err);
     });
 
-    // We still send the IP address as before
+    // Send the IP address to the C++ process's standard input
     process.stdin.write(ipAddress + "\n");
     process.stdin.end();
   });
@@ -55,14 +62,14 @@ export async function sendDataToScreen(
   config: Config
 ): Promise<void> {
   if (!config.displayIpAddress) {
-    console.error("❌ No displayIpAddress provided");
+    console.error("❌ No displayIpAddress provided in config.");
     return;
   }
 
   try {
     await createScreenAndSend(config.displayIpAddress);
-    // Result will be logged by the service
+    // Result is logged by createScreenAndSend
   } catch (error) {
-    console.error("Error:", error);
+    console.error("Error calling screen sender:", error);
   }
 }

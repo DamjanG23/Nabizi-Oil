@@ -1,110 +1,141 @@
 #include <iostream>
-#include <windows.h>
 #include <string>
-#include <io.h>      // Required for _setmode
-#include <fcntl.h>   // Required for _O_U16TEXT
+#include <windows.h>
+#include <vector>
+#include <fcntl.h>
+#include <io.h>
 
-// Define the function types from your DLL
-typedef int (*Hd_CreateScreenFunc)(int nWidth, int nHeight, int nColor, int nGray, int nCardType, void *pExParamsBuf, int nBufSize);
-typedef int (*Hd_SendScreenFunc)(int nSendType, void *pStrParams, void *pDeviceGUID, void *pExParamsBuf, int nBufSize);
-typedef int (*Hd_AddAreaFunc)(int nProgramID, int nX, int nY, int nWidth, int nHeight, void *pBoderImgPath, int nBorderEffect, int nBorderSpeed, void *pExParamsBuf, int nBufSize);
-typedef int (*Hd_AddSimpleTextAreaItemFunc)(int nAreaID, void *pText, int nTextColor, int nBackGroupColor, int nStyle, void *pFontName, int nFontHeight, int nShowEffect, int nShowSpeed, int nClearType, int nStayTime, void *pExParamsBuf, int nBufSize);
+// --- Function Pointer Typedefs ---
+typedef int (*HD_CreateScreen)(int, int, int, int, int, void*, int);
+typedef int (*HD_AddProgram)(void*, int, int, void*, int);
+typedef int (*HD_AddArea)(int, int, int, int, int, void*, int, int, void*, int);
+typedef int (*HD_AddSimpleTextAreaItem)(int, void*, int, int, int, void*, int, int, int, int, int, void*, int);
+typedef int (*HD_SendScreen)(int, void*, void*, void*, int);
+typedef int (*HD_GetSDKLastError)(); 
+typedef int (*HD_GetColor)(int, int, int);
 
-// Helper for colors
-#define HD_RED RGB(255, 0, 0)
-#define HD_BLACK RGB(0, 0, 0)
+// Helper function to convert a standard string (UTF-8) to a wide string (UTF-16)
+wchar_t* stringToWide(const std::string& str) {
+    int size_needed = MultiByteToWideChar(CP_UTF8, 0, &str[0], (int)str.size(), NULL, 0);
+    wchar_t* wstr = new wchar_t[size_needed + 1];
+    MultiByteToWideChar(CP_UTF8, 0, &str[0], (int)str.size(), wstr, size_needed);
+    wstr[size_needed] = L'\0';
+    return wstr;
+}
 
 int main() {
-    // Set console mode to handle UTF-16 I/O correctly
     _setmode(_fileno(stdout), _O_U16TEXT);
-    _setmode(_fileno(stdin), _O_U16TEXT);
 
-    try {
-        // Use wstring for UTF-16
-        std::wstring ipAddress;
-        if (!std::getline(std::wcin, ipAddress)) {
-            std::wcout << L"{\"success\": false, \"error\": \"No input received\"}" << std::endl;
-            return 1;
-        }
-        
-        // Use LoadLibraryW for wide character support
-        HMODULE hDll = LoadLibraryW(L"HDSDK.dll");
-        if (!hDll) {
-            std::wcout << L"{\"success\": false, \"error\": \"Failed to load HDSDK.dll\"}" << std::endl;
-            return 1;
-        }
-
-        // GetProcAddress still uses standard char* for function names
-        Hd_CreateScreenFunc createScreen = (Hd_CreateScreenFunc)GetProcAddress(hDll, "Hd_CreateScreen");
-        Hd_SendScreenFunc sendScreen = (Hd_SendScreenFunc)GetProcAddress(hDll, "Hd_SendScreen");
-        Hd_AddAreaFunc addArea = (Hd_AddAreaFunc)GetProcAddress(hDll, "Hd_AddArea");
-        Hd_AddSimpleTextAreaItemFunc addSimpleText = (Hd_AddSimpleTextAreaItemFunc)GetProcAddress(hDll, "Hd_AddSimpleTextAreaItem");
-
-        if (!createScreen || !sendScreen || !addArea || !addSimpleText) {
-             std::wcout << L"{\"success\": false, \"error\": \"Failed to find one or more required functions in DLL\"}" << std::endl;
-            FreeLibrary(hDll);
-            return 1;
-        }
-
-        // 1. Create screen
-        // --- MODIFIED LINE: Using a specific card type (A40 = 20) instead of default 0 ---
-        int createResult = createScreen(320, 240, 2, 1, 20, 0, 0);
-        if (createResult != 0) {
-            std::wcout << L"{\"success\": false, \"error\": \"Failed to create screen, code: " << createResult << L"\"}" << std::endl;
-            FreeLibrary(hDll);
-            return 1;
-        }
-
-        // Add a small delay for the hardware to initialize
-        Sleep(100);
-
-        // 2. Add an area
-        int areaId = addArea(0, 0, 0, 320, 240, 0, 0, 0, 0, 0);
-        if (areaId == -1) {
-            std::wcout << L"{\"success\": false, \"error\": \"Failed to add area.\"}" << std::endl;
-            FreeLibrary(hDll);
-            return 1;
-        }
-
-        // 3. Add text using the correct function and wide strings (L"...")
-        int textResult = addSimpleText(
-            areaId,
-            (void*)L"Test OK",       // Text (as wide string)
-            HD_RED,                 // Text color
-            HD_BLACK,               // Background color
-            0x0004,                 // Style (Align horizontal and vertical center)
-            (void*)L"Arial",        // Font name (as wide string)
-            16,                     // Font height
-            1,                      // Show effect (static)
-            25,                     // Show speed
-            0,                      // Clear type
-            3,                      // Stay time (3 seconds)
-            0, 0
-        );
-
-        if (textResult != 0) {
-             std::wcout << L"{\"success\": false, \"error\": \"Failed to add simple text item.\"}" << std::endl;
-            FreeLibrary(hDll);
-            return 1;
-        }
-
-        // 4. Send to screen
-        std::wstring sendParams = L"IP=" + ipAddress;
-        int sendResult = sendScreen(0, (void*)sendParams.c_str(), 0, 0, 0);
-
-        if (sendResult != 0) {
-            std::wcout << L"{\"success\": false, \"error\": \"Failed to send to screen, code: " << sendResult << L"\"}" << std::endl;
-            FreeLibrary(hDll);
-            return 1;
-        }
-
-        std::wcout << L"{\"success\": true, \"message\": \"Screen data sent successfully to " << ipAddress << L"\"}" << std::endl;
-        
-        FreeLibrary(hDll);
-        return 0;
-        
-    } catch (...) {
-        std::wcout << L"{\"success\": false, \"error\": \"Unexpected error occurred\"}" << std::endl;
+    // --- 1. Load the DLL ---
+    HINSTANCE hDll = LoadLibraryW(L"HDSdk.dll");
+    if (!hDll) {
+        std::wcout << L"{\"success\": false, \"error\": \"Failed to load HDSdk.dll\"}" << std::endl;
         return 1;
     }
+
+    // --- 2. Load Function Pointers ---
+    HD_CreateScreen Hd_CreateScreen_ptr = (HD_CreateScreen)GetProcAddress(hDll, "Hd_CreateScreen");
+    HD_AddProgram Hd_AddProgram_ptr = (HD_AddProgram)GetProcAddress(hDll, "Hd_AddProgram");
+    HD_AddArea Hd_AddArea_ptr = (HD_AddArea)GetProcAddress(hDll, "Hd_AddArea");
+    HD_AddSimpleTextAreaItem Hd_AddSimpleTextAreaItem_ptr = (HD_AddSimpleTextAreaItem)GetProcAddress(hDll, "Hd_AddSimpleTextAreaItem");
+    HD_SendScreen Hd_SendScreen_ptr = (HD_SendScreen)GetProcAddress(hDll, "Hd_SendScreen");
+    HD_GetSDKLastError Hd_GetSDKLastError_ptr = (HD_GetSDKLastError)GetProcAddress(hDll, "Hd_GetSDKLastError");
+    HD_GetColor Hd_GetColor_ptr = (HD_GetColor)GetProcAddress(hDll, "Hd_GetColor");
+
+    if (!Hd_CreateScreen_ptr || !Hd_AddProgram_ptr || !Hd_AddArea_ptr || !Hd_AddSimpleTextAreaItem_ptr || !Hd_SendScreen_ptr || !Hd_GetSDKLastError_ptr || !Hd_GetColor_ptr) {
+        std::wcout << L"{\"success\": false, \"error\": \"Failed to get one or more function pointers from DLL\"}" << std::endl;
+        FreeLibrary(hDll);
+        return 1;
+    }
+    
+    // --- 3. Read IP Address from Node.js ---
+    std::string ipAddress;
+    std::cin >> ipAddress;
+    
+    wchar_t* pSendParams = stringToWide(ipAddress);
+
+    // --- 4. Call the DLL functions with logging ---
+    int nErrorCode = 0;
+    int nRe = -1;
+
+    int nWidth = 64;
+    int nHeight = 32;
+    int nColor = 1;
+    int nCardType = 0;
+    
+    std::wcout << L"Calling Hd_CreateScreen..." << std::endl;
+    nRe = Hd_CreateScreen_ptr(nWidth, nHeight, nColor, 1, nCardType, nullptr, 0);
+    if (nRe != 0) {
+        nErrorCode = Hd_GetSDKLastError_ptr();
+        std::wcout << L"{\"success\": false, \"error\": \"Hd_CreateScreen failed with code: " << nErrorCode << L"\"}" << std::endl;
+        delete[] pSendParams;
+        FreeLibrary(hDll);
+        return 1;
+    }
+    std::wcout << L"Hd_CreateScreen OK." << std::endl;
+
+    std::wcout << L"Calling Hd_AddProgram..." << std::endl;
+    int nProgramID = Hd_AddProgram_ptr(nullptr, 0, 0, nullptr, 0);
+    if (nProgramID == -1) {
+        nErrorCode = Hd_GetSDKLastError_ptr();
+        std::wcout << L"{\"success\": false, \"error\": \"Hd_AddProgram failed with code: " << nErrorCode << L"\"}" << std::endl;
+        delete[] pSendParams;
+        FreeLibrary(hDll);
+        return 1;
+    }
+    std::wcout << L"Hd_AddProgram OK." << std::endl;
+
+    std::wcout << L"Calling Hd_AddArea..." << std::endl;
+    int nAreaID = Hd_AddArea_ptr(nProgramID, 0, 0, nWidth, nHeight, nullptr, 0, 0, nullptr, 0);
+    if (nAreaID == -1) {
+        nErrorCode = Hd_GetSDKLastError_ptr();
+        std::wcout << L"{\"success\": false, \"error\": \"Hd_AddArea failed with code: " << nErrorCode << L"\"}" << std::endl;
+        delete[] pSendParams;
+        FreeLibrary(hDll);
+        return 1;
+    }
+    std::wcout << L"Hd_AddArea OK." << std::endl;
+
+    wchar_t* pText = stringToWide("Hello");
+    wchar_t* pFontName = stringToWide("Arial");
+
+    std::wcout << L"Calling Hd_GetColor..." << std::endl;
+    int nTextColor = Hd_GetColor_ptr(255, 0, 0);
+    std::wcout << L"Hd_GetColor OK." << std::endl;
+
+    std::wcout << L"Calling Hd_AddSimpleTextAreaItem..." << std::endl;
+    int nAreaItemID = Hd_AddSimpleTextAreaItem_ptr(nAreaID, pText, nTextColor, 0, 4, pFontName, 16, 30, 201, 3, 3, nullptr, 0);
+    if (nAreaItemID == -1) {
+        nErrorCode = Hd_GetSDKLastError_ptr();
+        std::wcout << L"{\"success\": false, \"error\": \"Hd_AddSimpleTextAreaItem failed with code: " << nErrorCode << L"\"}" << std::endl;
+        delete[] pText;
+        delete[] pFontName;
+        delete[] pSendParams;
+        FreeLibrary(hDll);
+        return 1;
+    }
+    std::wcout << L"Hd_AddSimpleTextAreaItem OK." << std::endl;
+
+    delete[] pText;
+    delete[] pFontName;
+
+    std::wcout << L"Calling Hd_SendScreen..." << std::endl;
+    int nSendType = 0;
+    nRe = Hd_SendScreen_ptr(nSendType, pSendParams, nullptr, nullptr, 0);
+    if (nRe != 0) {
+        nErrorCode = Hd_GetSDKLastError_ptr();
+        std::wcout << L"{\"success\": false, \"error\": \"Hd_SendScreen failed with code: " << nErrorCode << L"\"}" << std::endl;
+        delete[] pSendParams;
+        FreeLibrary(hDll);
+        return 1;
+    }
+    std::wcout << L"Hd_SendScreen OK." << std::endl;
+
+    // --- 5. Clean Up and Report Success ---
+    delete[] pSendParams;
+    FreeLibrary(hDll);
+
+    std::wcout << L"{\"success\": true, \"message\": \"Screen data sent successfully.\"}" << std::endl;
+
+    return 0;
 }

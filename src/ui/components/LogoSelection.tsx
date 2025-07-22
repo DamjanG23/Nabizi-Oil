@@ -28,9 +28,9 @@ export function LogoSelection() {
               console.log("Image src:", logo);
             }}
           />
-          <button className="remove-logo-button" onClick={() => {}}>
+          {/* <button className="remove-logo-button" onClick={() => {}}>
             ✕
-          </button>
+          </button> */}
         </div>
       ) : (
         <button className="upload-button" onClick={() => {}}>

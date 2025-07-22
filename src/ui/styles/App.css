@@ -71,6 +71,11 @@ html {
   height: 100%;
   overflow-y: auto;
   padding-right: 10px;
+  /* --- CHANGED --- */
+  /* Set a max-width to prevent the list from being too wide */
+  max-width: 700px;
+  /* Center the list horizontally within its container */
+  margin: 0 auto;
 }
 
 /* Individual fuel item styling */
@@ -174,7 +179,7 @@ html {
   max-width: 150px;
   max-height: 150px;
   border-radius: 8px;
-  border: 2px solid white;
+  /* border: 1px solid white; */
 }
 
 /* X button to remove the logo */
