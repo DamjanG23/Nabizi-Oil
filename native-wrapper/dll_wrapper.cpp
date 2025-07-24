@@ -17,7 +17,7 @@ typedef int (__stdcall *HD_CreateScreen)(int, int, int, int, int, void*, int);
 typedef int (__stdcall *HD_AddProgram)(void*, int, int, void*, int);
 typedef int (__stdcall *HD_AddArea)(int, int, int, int, int, void*, int, int, void*, int);
 typedef int (__stdcall *HD_AddSimpleTextAreaItem)(int, void*, int, int, int, void*, int, int, int, int, int, void*, int);
-typedef int (__stdcall *HD_SendScreen)(int, void*, void*, void*, int); // New typedef
+typedef int (__stdcall *HD_SendScreen)(int, void*, void*, void*, int);
 
 int main() {
     SetUnhandledExceptionFilter(MyUnhandledExceptionFilter);
@@ -31,22 +31,25 @@ int main() {
     HD_AddProgram Hd_AddProgram_ptr = (HD_AddProgram)GetProcAddress(hDll, "Hd_AddProgram");
     HD_AddArea Hd_AddArea_ptr = (HD_AddArea)GetProcAddress(hDll, "Hd_AddArea");
     HD_AddSimpleTextAreaItem Hd_AddSimpleTextAreaItem_ptr = (HD_AddSimpleTextAreaItem)GetProcAddress(hDll, "Hd_AddSimpleTextAreaItem");
-    HD_SendScreen Hd_SendScreen_ptr = (HD_SendScreen)GetProcAddress(hDll, "Hd_SendScreen"); // Get new pointer
+    HD_SendScreen Hd_SendScreen_ptr = (HD_SendScreen)GetProcAddress(hDll, "Hd_SendScreen");
 
-    if (!Hd_GetSDKLastError_ptr || !Hd_CreateScreen_ptr || !Hd_AddProgram_ptr || !Hd_AddArea_ptr || !Hd_AddSimpleTextAreaItem_ptr || !Hd_SendScreen_ptr) { // Added check
+    if (!Hd_GetSDKLastError_ptr || !Hd_CreateScreen_ptr || !Hd_AddProgram_ptr || !Hd_AddArea_ptr || !Hd_AddSimpleTextAreaItem_ptr || !Hd_SendScreen_ptr) {
         std::wcout << L"{\"success\": false, \"error\": \"Failed to get one or more function pointers.\"}" << std::endl;
         FreeLibrary(hDll);
         return 1;
     }
     
-    // --- 3, 4, 5, 6: Build the screen layout (Unchanged) ---
+    // --- 3, 4, 5, 6: Build the screen layout ---
     int nWidth = 32, nHeight = 16, nColor = 0, nGray = 1, nCardType = 58;
     if (Hd_CreateScreen_ptr(nWidth, nHeight, nColor, nGray, nCardType, nullptr, 0) != 0) { /*...*/ return 1; }
     int nProgramID = Hd_AddProgram_ptr(nullptr, 0, 0, nullptr, 0);
     if (nProgramID == -1) { /*...*/ return 1; }
     int nAreaID = Hd_AddArea_ptr(nProgramID, 0, 0, nWidth, nHeight, nullptr, 0, 5, nullptr, 0);
     if (nAreaID == -1) { /*...*/ return 1; }
-    int nAreaItemID = Hd_AddSimpleTextAreaItem_ptr(nAreaID, L"Hello", 255, 0, 0x0004, L"Arial", 12, 0, 25, 0, 3, nullptr, 0);
+    
+    // THE ONLY CHANGE IS HERE: nStayTime is now 65535 instead of 3.
+    int nAreaItemID = Hd_AddSimpleTextAreaItem_ptr(nAreaID, L"Hello", 255, 0, 0x0004, L"Arial", 12, 0, 25, 0, 65535, nullptr, 0);
+    
     if (nAreaItemID == -1) { /*...*/ return 1; }
     std::wcout << L"{\"status\": \"Screen layout created successfully in memory.\"}" << std::endl;
 
