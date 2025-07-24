@@ -2,7 +2,7 @@
 #include <windows.h>
 #include <fcntl.h>
 #include <io.h>
-#include <string> // Added for clarity with strings
+#include <string>
 
 // Crash handler function...
 LONG WINAPI MyUnhandledExceptionFilter(struct _EXCEPTION_POINTERS* ExceptionInfo) {
@@ -11,12 +11,13 @@ LONG WINAPI MyUnhandledExceptionFilter(struct _EXCEPTION_POINTERS* ExceptionInfo
     return EXCEPTION_EXECUTE_HANDLER;
 }
 
-// --- Function Pointer Typedefs with corrected calling convention ---
+// --- Function Pointer Typedefs ---
 typedef int (__stdcall *HD_GetSDKLastError)();
 typedef int (__stdcall *HD_CreateScreen)(int, int, int, int, int, void*, int);
 typedef int (__stdcall *HD_AddProgram)(void*, int, int, void*, int);
 typedef int (__stdcall *HD_AddArea)(int, int, int, int, int, void*, int, int, void*, int);
-typedef int (__stdcall *HD_AddSimpleTextAreaItem)(int, void*, int, int, int, void*, int, int, int, int, int, void*, int); // New typedef
+typedef int (__stdcall *HD_AddSimpleTextAreaItem)(int, void*, int, int, int, void*, int, int, int, int, int, void*, int);
+typedef int (__stdcall *HD_SendScreen)(int, void*, void*, void*, int); // New typedef
 
 int main() {
     SetUnhandledExceptionFilter(MyUnhandledExceptionFilter);
@@ -29,53 +30,43 @@ int main() {
     HD_CreateScreen Hd_CreateScreen_ptr = (HD_CreateScreen)GetProcAddress(hDll, "Hd_CreateScreen");
     HD_AddProgram Hd_AddProgram_ptr = (HD_AddProgram)GetProcAddress(hDll, "Hd_AddProgram");
     HD_AddArea Hd_AddArea_ptr = (HD_AddArea)GetProcAddress(hDll, "Hd_AddArea");
-    HD_AddSimpleTextAreaItem Hd_AddSimpleTextAreaItem_ptr = (HD_AddSimpleTextAreaItem)GetProcAddress(hDll, "Hd_AddSimpleTextAreaItem"); // Get new pointer
+    HD_AddSimpleTextAreaItem Hd_AddSimpleTextAreaItem_ptr = (HD_AddSimpleTextAreaItem)GetProcAddress(hDll, "Hd_AddSimpleTextAreaItem");
+    HD_SendScreen Hd_SendScreen_ptr = (HD_SendScreen)GetProcAddress(hDll, "Hd_SendScreen"); // Get new pointer
 
-    if (!Hd_GetSDKLastError_ptr || !Hd_CreateScreen_ptr || !Hd_AddProgram_ptr || !Hd_AddArea_ptr || !Hd_AddSimpleTextAreaItem_ptr) { // Added check
+    if (!Hd_GetSDKLastError_ptr || !Hd_CreateScreen_ptr || !Hd_AddProgram_ptr || !Hd_AddArea_ptr || !Hd_AddSimpleTextAreaItem_ptr || !Hd_SendScreen_ptr) { // Added check
         std::wcout << L"{\"success\": false, \"error\": \"Failed to get one or more function pointers.\"}" << std::endl;
         FreeLibrary(hDll);
         return 1;
     }
     
-    // --- 3. CreateScreen, 4. AddProgram, 5. AddArea (Unchanged) ---
+    // --- 3, 4, 5, 6: Build the screen layout (Unchanged) ---
     int nWidth = 32, nHeight = 16, nColor = 0, nGray = 1, nCardType = 58;
     if (Hd_CreateScreen_ptr(nWidth, nHeight, nColor, nGray, nCardType, nullptr, 0) != 0) { /*...*/ return 1; }
-    std::wcout << L"{\"status\": \"Hd_CreateScreen OK.\"}" << std::endl;
-
     int nProgramID = Hd_AddProgram_ptr(nullptr, 0, 0, nullptr, 0);
     if (nProgramID == -1) { /*...*/ return 1; }
-    std::wcout << L"{\"status\": \"Hd_AddProgram OK.\", \"program_id\": " << nProgramID << L"}" << std::endl;
-
     int nAreaID = Hd_AddArea_ptr(nProgramID, 0, 0, nWidth, nHeight, nullptr, 0, 5, nullptr, 0);
     if (nAreaID == -1) { /*...*/ return 1; }
-    std::wcout << L"{\"status\": \"Hd_AddArea OK.\", \"area_id\": " << nAreaID << L"}" << std::endl;
+    int nAreaItemID = Hd_AddSimpleTextAreaItem_ptr(nAreaID, L"Hello", 255, 0, 0x0004, L"Arial", 12, 0, 25, 0, 3, nullptr, 0);
+    if (nAreaItemID == -1) { /*...*/ return 1; }
+    std::wcout << L"{\"status\": \"Screen layout created successfully in memory.\"}" << std::endl;
 
+    // --- 7. Call Hd_SendScreen ---
+    int nSendType = 0; // 0 for TCP/IP communication.
+    wchar_t* pSendParams = L"192.168.50.200"; // The IP from your config.
+    
+    int nRe = Hd_SendScreen_ptr(nSendType, pSendParams, nullptr, nullptr, 0);
 
-    // --- 6. Call Hd_AddSimpleTextAreaItem ---
-    wchar_t* pText = L"Hello";                      // Text to display. Must be wide char.
-    int nTextColor = 255;                          // Simple red color.
-    int nBackGroupColor = 0;                       // Black background.
-    int nStyle = 0x0004;                           // Center horizontally and vertically.
-    wchar_t* pFontName = L"Arial";                 // A safe, common font.
-    int nFontHeight = 12;                          // A font size that fits on the 16px high screen.
-    int nShowEffect = 0;                           // Static (no animation).
-    int nShowSpeed = 25;                           // Default speed.
-    int nClearType = 0;                            // Immediately clear.
-    int nStayTime = 3;                             // Stay for 3 seconds.
-
-    int nAreaItemID = Hd_AddSimpleTextAreaItem_ptr(nAreaID, pText, nTextColor, nBackGroupColor, nStyle, pFontName, nFontHeight, nShowEffect, nShowSpeed, nClearType, nStayTime, nullptr, 0);
-
-    if (nAreaItemID == -1) {
+    if (nRe != 0) {
         int nErrorCode = Hd_GetSDKLastError_ptr();
-        std::wcout << L"{\"success\": false, \"error\": \"Hd_AddSimpleTextAreaItem failed!\", \"sdk_error_code\": " << nErrorCode << L"}" << std::endl;
+        std::wcout << L"{\"success\": false, \"error\": \"Hd_SendScreen failed!\", \"sdk_error_code\": " << nErrorCode << L"}" << std::endl;
         FreeLibrary(hDll);
         return 1;
     }
 
-    // --- 7. Report Success ---
-    std::wcout << L"{\"success\": true, \"message\": \"Hd_AddSimpleTextAreaItem executed successfully.\", \"area_item_id\": " << nAreaItemID << L"}" << std::endl;
+    // --- 8. Report Final Success ---
+    std::wcout << L"{\"success\": true, \"message\": \"Screen data sent successfully to " << pSendParams << L".\"}" << std::endl;
 
-    // --- 8. Clean up ---
+    // --- 9. Clean up ---
     FreeLibrary(hDll);
     return 0;
 }
