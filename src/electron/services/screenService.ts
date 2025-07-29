@@ -1,6 +1,21 @@
 import { spawn } from "child_process";
 import path from "path";
 import { fileURLToPath } from "url";
+// Import the 'app' module from Electron
+import { app } from "electron";
+
+// NOTE: Make sure you have your type definitions for FuelItem and Config here
+// For example:
+type Config = {
+  displayIpAddress?: string;
+  // ... other config properties
+};
+
+type FuelItem = {
+  id: number;
+  name: string;
+  price: number;
+};
 
 /**
  * Spawns the C++ wrapper, sends a JSON payload to it, and waits for its response.
@@ -9,32 +24,55 @@ import { fileURLToPath } from "url";
  */
 function sendPayloadToWrapper(jsonPayload: string): Promise<boolean> {
   return new Promise((resolve, reject) => {
-    const __filename = fileURLToPath(import.meta.url);
-    const __dirname = path.dirname(__filename);
-    const wrapperPath = path.join(
-      __dirname,
-      "../../native-wrapper/dll_wrapper.exe"
+    // --- Dynamic path for the wrapper executable ---
+
+    // app.isPackaged is true when the app is running from a packaged file (e.g., an .exe)
+    const isProduction = app.isPackaged;
+    let wrapperPath;
+
+    if (isProduction) {
+      // In production, the executable is in the 'resources' folder next to the app's executable.
+      // process.resourcesPath correctly points to this folder.
+      wrapperPath = path.join(
+        process.resourcesPath,
+        "native-wrapper/dll_wrapper.exe"
+      );
+    } else {
+      // In development, use the relative path from your source code structure.
+      const __filename = fileURLToPath(import.meta.url);
+      const __dirname = path.dirname(__filename);
+      wrapperPath = path.join(
+        __dirname,
+        "../../native-wrapper/dll_wrapper.exe"
+      );
+    }
+
+    console.log(
+      `Running in ${isProduction ? "production" : "development"} mode.`
     );
+    console.log(`Attempting to spawn wrapper at: ${wrapperPath}`);
 
     console.log("Spawning wrapper with payload...");
 
-    const process = spawn(wrapperPath);
+    // --- CHANGE START: Renamed 'process' to 'childProcess' to avoid conflict ---
+    const childProcess = spawn(wrapperPath);
+    // --- CHANGE END ---
     let output = "";
     let errorOutput = "";
 
     // Set encodings for reading stdout (UTF-16) and stderr (standard)
-    process.stdout.setEncoding("utf16le");
-    process.stderr.setEncoding("utf8");
+    childProcess.stdout.setEncoding("utf16le");
+    childProcess.stderr.setEncoding("utf8");
 
-    process.stdout.on("data", (data) => {
+    childProcess.stdout.on("data", (data) => {
       output += data;
     });
 
-    process.stderr.on("data", (data) => {
+    childProcess.stderr.on("data", (data) => {
       errorOutput += data;
     });
 
-    process.on("close", (code) => {
+    childProcess.on("close", (code) => {
       console.log("--- Raw C++ Output ---\n", output);
 
       if (code !== 0) {
@@ -74,12 +112,12 @@ function sendPayloadToWrapper(jsonPayload: string): Promise<boolean> {
       }
     });
 
-    process.on("error", (err) => {
+    childProcess.on("error", (err) => {
       reject(err);
     });
 
-    process.stdin.write(jsonPayload + "\n");
-    process.stdin.end();
+    childProcess.stdin.write(jsonPayload + "\n");
+    childProcess.stdin.end();
   });
 }
 
