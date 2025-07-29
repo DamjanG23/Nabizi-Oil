@@ -62,35 +62,28 @@ int main() {
         // Extract config data
         auto& config = data["config"];
         std::string ip_address_str = config["displayIpAddress"];
-        int nWidth = config["screenWidth"];
+        int nWidth = config["screenWidth"]; // This is now the width for a SINGLE fuel item
         int nHeight = config["screenHeight"];
         std::string cardType_str = config["cardType"];
         std::string fontName_str = config["fontName"];
         int nFontHeight = config["fontHeight"];
-
-        // Extract fuel data
+        
+        // Extract fuel data array
         auto& fuelItems = data["fuelItems"];
         if (fuelItems.empty()) {
             throw std::runtime_error("FuelItems array is empty.");
         }
-        auto& firstFuelItem = fuelItems[0];
-        std::string fuel_name_str = firstFuelItem["name"];
-        double fuel_price = firstFuelItem["price"];
 
         // Convert strings to wide strings for the DLL
         std::wstring ip_address_ws(ip_address_str.begin(), ip_address_str.end());
         std::wstring fontName_ws(fontName_str.begin(), fontName_str.end());
-        
-        std::wstringstream ss;
-        ss << std::wstring(fuel_name_str.begin(), fuel_name_str.end()) << L": " << std::fixed << std::setprecision(3) << fuel_price;
-        std::wstring displayText = ss.str();
-
         int nCardType = mapCardType(cardType_str);
 
         // --- DLL Call Sequence ---
         HINSTANCE hDll = LoadLibraryW(L"HDSdk.dll");
         if (!hDll) { throw std::runtime_error("Failed to load HDSdk.dll"); }
 
+        // Get function pointers from DLL
         HD_GetSDKLastError Hd_GetSDKLastError_ptr = (HD_GetSDKLastError)GetProcAddress(hDll, "Hd_GetSDKLastError");
         HD_CreateScreen Hd_CreateScreen_ptr = (HD_CreateScreen)GetProcAddress(hDll, "Hd_CreateScreen");
         HD_AddProgram Hd_AddProgram_ptr = (HD_AddProgram)GetProcAddress(hDll, "Hd_AddProgram");
@@ -101,27 +94,59 @@ int main() {
         if (!Hd_GetSDKLastError_ptr || !Hd_CreateScreen_ptr || !Hd_AddProgram_ptr || !Hd_AddArea_ptr || !Hd_AddSimpleTextAreaItem_ptr || !Hd_SendScreen_ptr) {
             throw std::runtime_error("Failed to get one or more function pointers.");
         }
+        
+        // --- CHANGE START: DYNAMIC SCREEN CREATION ---
+        
+        // Calculate the total width based on the number of items.
+        int totalWidth = nWidth * fuelItems.size();
 
-        // --- Call sequence with improved error handling ---
-        if (Hd_CreateScreen_ptr(nWidth, nHeight, 0, 1, nCardType, nullptr, 0) != 0) {
+        // Create a single, wide screen to hold all the item areas.
+        if (Hd_CreateScreen_ptr(totalWidth, nHeight, 0, 1, nCardType, nullptr, 0) != 0) {
             throw std::runtime_error("Hd_CreateScreen failed with code: " + std::to_string(Hd_GetSDKLastError_ptr()));
         }
+        std::wcout << L"[LOG] Hd_CreateScreen OK. Total Width: " << totalWidth << std::endl;
 
+        // Add one program to the screen.
         int nProgramID = Hd_AddProgram_ptr(nullptr, 0, 0, nullptr, 0);
         if (nProgramID == -1) {
             throw std::runtime_error("Hd_AddProgram failed with code: " + std::to_string(Hd_GetSDKLastError_ptr()));
         }
+        std::wcout << L"[LOG] Hd_AddProgram OK. Program ID: " << nProgramID << std::endl;
 
-        int nAreaID = Hd_AddArea_ptr(nProgramID, 0, 0, nWidth, nHeight, nullptr, 0, 5, nullptr, 0);
-        if (nAreaID == -1) {
-            throw std::runtime_error("Hd_AddArea failed with code: " + std::to_string(Hd_GetSDKLastError_ptr()));
-        }
-        
-        int nAreaItemID = Hd_AddSimpleTextAreaItem_ptr(nAreaID, (void*)displayText.c_str(), 255, 0, 0x0004, (void*)fontName_ws.c_str(), nFontHeight, 0, 25, 0, 65535, nullptr, 0);
-        if (nAreaItemID == -1) {
-            throw std::runtime_error("Hd_AddSimpleTextAreaItem failed with code: " + std::to_string(Hd_GetSDKLastError_ptr()));
-        }
+        // --- NEW: Loop through each fuel item to create its own area and text ---
+        for (int i = 0; i < fuelItems.size(); ++i) {
+            auto& item = fuelItems[i];
 
+            // Calculate the horizontal (x) position for the current area.
+            // The first item is at 0, the second at nWidth, the third at 2*nWidth, and so on.
+            int currentX = i * nWidth;
+            
+            std::wcout << L"[LOG] Creating Area " << i << " at X=" << currentX << L", Width=" << nWidth << std::endl;
+
+            // Add an area for this specific item.
+            int nAreaID = Hd_AddArea_ptr(nProgramID, currentX, 0, nWidth, nHeight, nullptr, 0, 5, nullptr, 0);
+            if (nAreaID == -1) {
+                throw std::runtime_error("Hd_AddArea for item " + std::to_string(i) + " failed with code: " + std::to_string(Hd_GetSDKLastError_ptr()));
+            }
+            std::wcout << L"[LOG] Hd_AddArea OK. Area ID: " << nAreaID << std::endl;
+            
+            // Get the price and format it to two decimal places.
+            double fuel_price = item["price"];
+            std::wstringstream ss;
+            ss << std::fixed << std::setprecision(2) << fuel_price;
+            std::wstring displayText = ss.str();
+
+            // Add the formatted price as a text item inside the new area.
+            int nAreaItemID = Hd_AddSimpleTextAreaItem_ptr(nAreaID, (void*)displayText.c_str(), 255, 0, 0x0004, (void*)fontName_ws.c_str(), nFontHeight, 0, 25, 0, 65535, nullptr, 0);
+            if (nAreaItemID == -1) {
+                throw std::runtime_error("Hd_AddSimpleTextAreaItem for item " + std::to_string(i) + " failed with code: " + std::to_string(Hd_GetSDKLastError_ptr()));
+            }
+            std::wcout << L"[LOG] Hd_AddSimpleTextAreaItem OK. Item ID: " << nAreaItemID << " Text: " << displayText << std::endl;
+        }
+        // --- CHANGE END ---
+
+
+        std::wcout << L"[LOG] Attempting to send to screen at " << ip_address_ws << L"..." << std::endl;
         if (Hd_SendScreen_ptr(0, (void*)ip_address_ws.c_str(), nullptr, nullptr, 0) != 0) {
             int errorCode = Hd_GetSDKLastError_ptr();
             std::string errorMsg = "Hd_SendScreen failed with code: " + std::to_string(errorCode);
@@ -130,8 +155,11 @@ int main() {
             }
             throw std::runtime_error(errorMsg);
         }
+        std::wcout << L"[LOG] Hd_SendScreen appears to have succeeded." << std::endl;
+
 
         FreeLibrary(hDll);
+        // This is the final, official output for the TypeScript app to parse.
         std::wcout << L"{\"success\": true, \"message\": \"Screen data sent successfully.\"}" << std::endl;
 
     } catch (const std::exception& e) {
