@@ -62,8 +62,13 @@ int main() {
         // Extract config data
         auto& config = data["config"];
         std::string ip_address_str = config["displayIpAddress"];
-        int nWidth = config["screenWidth"]; // This is now the width for a SINGLE fuel item
-        int nHeight = config["screenHeight"];
+        int nWidth = config["screenWidth"]; // Width for a SINGLE item area
+        int nHeight = config["screenHeight"]; // Height for a SINGLE item area
+        
+        // --- CHANGE START: Get Row/Column config ---
+        std::string rowColumn_str = config.value("rowColumn", "R"); // Default to "R" if not provided
+        // --- CHANGE END ---
+
         std::string cardType_str = config["cardType"];
         std::string fontName_str = config["fontName"];
         int nFontHeight = config["fontHeight"];
@@ -95,16 +100,26 @@ int main() {
             throw std::runtime_error("Failed to get one or more function pointers.");
         }
         
-        // --- CHANGE START: DYNAMIC SCREEN CREATION ---
+        // --- CHANGE START: DYNAMIC LAYOUT LOGIC ---
         
-        // Calculate the total width based on the number of items.
-        int totalWidth = nWidth * fuelItems.size();
+        int totalWidth, totalHeight;
+        if (rowColumn_str == "C") {
+            // Column Layout: Stacked vertically
+            totalWidth = nWidth;
+            totalHeight = nHeight * fuelItems.size();
+            std::wcout << L"[LOG] Layout: Column. Total Screen Size: " << totalWidth << L"x" << totalHeight << std::endl;
+        } else {
+            // Row Layout (Default): Side-by-side horizontally
+            totalWidth = nWidth * fuelItems.size();
+            totalHeight = nHeight;
+            std::wcout << L"[LOG] Layout: Row. Total Screen Size: " << totalWidth << L"x" << totalHeight << std::endl;
+        }
 
-        // Create a single, wide screen to hold all the item areas.
-        if (Hd_CreateScreen_ptr(totalWidth, nHeight, 0, 1, nCardType, nullptr, 0) != 0) {
+        // Create a single screen sized to hold all the items.
+        if (Hd_CreateScreen_ptr(totalWidth, totalHeight, 0, 1, nCardType, nullptr, 0) != 0) {
             throw std::runtime_error("Hd_CreateScreen failed with code: " + std::to_string(Hd_GetSDKLastError_ptr()));
         }
-        std::wcout << L"[LOG] Hd_CreateScreen OK. Total Width: " << totalWidth << std::endl;
+        std::wcout << L"[LOG] Hd_CreateScreen OK." << std::endl;
 
         // Add one program to the screen.
         int nProgramID = Hd_AddProgram_ptr(nullptr, 0, 0, nullptr, 0);
@@ -113,18 +128,26 @@ int main() {
         }
         std::wcout << L"[LOG] Hd_AddProgram OK. Program ID: " << nProgramID << std::endl;
 
-        // --- NEW: Loop through each fuel item to create its own area and text ---
+        // Loop through each fuel item to create its own area and text
         for (int i = 0; i < fuelItems.size(); ++i) {
             auto& item = fuelItems[i];
-
-            // Calculate the horizontal (x) position for the current area.
-            // The first item is at 0, the second at nWidth, the third at 2*nWidth, and so on.
-            int currentX = i * nWidth;
             
-            std::wcout << L"[LOG] Creating Area " << i << " at X=" << currentX << L", Width=" << nWidth << std::endl;
+            int currentX, currentY;
+            if (rowColumn_str == "C") {
+                // Column: X is constant, Y increases for each item
+                currentX = 0;
+                currentY = i * nHeight;
+            } else {
+                // Row: Y is constant, X increases for each item
+                currentX = i * nWidth;
+                currentY = 0;
+            }
+            
+            std::wcout << L"[LOG] Creating Area " << i << " at (X=" << currentX << ", Y=" << currentY << ")" << std::endl;
 
-            // Add an area for this specific item.
-            int nAreaID = Hd_AddArea_ptr(nProgramID, currentX, 0, nWidth, nHeight, nullptr, 0, 5, nullptr, 0);
+            // Add an area for this specific item at the calculated position.
+            // The width and height are for the individual area (nWidth, nHeight).
+            int nAreaID = Hd_AddArea_ptr(nProgramID, currentX, currentY, nWidth, nHeight, nullptr, 0, 5, nullptr, 0);
             if (nAreaID == -1) {
                 throw std::runtime_error("Hd_AddArea for item " + std::to_string(i) + " failed with code: " + std::to_string(Hd_GetSDKLastError_ptr()));
             }
