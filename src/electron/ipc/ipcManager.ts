@@ -3,8 +3,9 @@ import { setupDataHandelers } from "./dataHandelers.js";
 
 export function setupIPC(
   mainWindow: BrowserWindow,
-  configDirPath: string | null,
-  config: Config
+  configDirPath: string,
+  config: Config,
+  launchDirectory: string
 ) {
-  setupDataHandelers(mainWindow, configDirPath, config);
+  setupDataHandelers(mainWindow, configDirPath, config, launchDirectory);
 }

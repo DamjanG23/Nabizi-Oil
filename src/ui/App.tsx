@@ -7,10 +7,6 @@ function App() {
   const [fuelList, setFuelList] = useState<FuelItem[]>([]);
 
   useEffect(() => {
-    window.electron.loadConfig();
-  }, []);
-
-  useEffect(() => {
     const loadFuelItems = async () => {
       try {
         const fuelNames = await window.electron.getFuelItems();

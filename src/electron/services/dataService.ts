@@ -34,26 +34,38 @@ export function loadConfig(window: BrowserWindow): void {
 
 export function saveConfigPath(
   configPath: string,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   window: BrowserWindow
 ): void {
   const data: ConfigPathData = { configPath };
 
   fs.writeFileSync(CONFIG_PATH_FILE, JSON.stringify(data, null, 2));
 
-  ipcWebContentsSend("onConfigPathChanged", window.webContents, configPath);
+  // ipcWebContentsSend("onConfigPathChanged", window.webContents, configPath);
+  app.relaunch();
+  app.exit();
 }
 
-export function getConfigPath(): string | null {
-  if (!fs.existsSync(CONFIG_PATH_FILE)) return null;
+export function getConfigPath(
+  launchDirectory: string = process.cwd(),
+  window: BrowserWindow
+): string {
+  if (!fs.existsSync(CONFIG_PATH_FILE)) {
+    saveConfigPath(launchDirectory, window);
+    return launchDirectory;
+  }
 
   try {
     const data: ConfigPathData = JSON.parse(
       fs.readFileSync(CONFIG_PATH_FILE, "utf-8")
     );
-    return data.configPath || null;
+    return data.configPath;
   } catch (error) {
-    console.error("Failed to parse config path file:", error);
-    return null;
+    console.error(
+      "Failed to parse config path file, returning default launch dir path:",
+      error
+    );
+    return launchDirectory;
   }
 }
 
@@ -74,48 +86,42 @@ export async function selectConfigPath(
   return selectedPath;
 }
 
-export function setConfigPathToDefault(mainWindow: BrowserWindow): string {
-  const exePath = app.getPath("exe");
-  const exeDir = path.dirname(exePath);
-
-  saveConfigPath(exeDir, mainWindow);
-  return exeDir;
-}
-
-export function initiateConfigPathIfUnavailable(window: BrowserWindow): void {
-  const existingPath = getConfigPath();
-
-  if (!existingPath) {
-    setConfigPathToDefault(window);
-  }
+export function setConfigPathToDefault(
+  mainWindow: BrowserWindow,
+  launchDirectory: string
+): string {
+  saveConfigPath(launchDirectory, mainWindow);
+  return launchDirectory;
 }
 
 //--------------------------------------------------------------------------
 
-export async function readConfigFromDirectory(directoryPath: string) {
+export async function readConfigFromDirectory(
+  directoryPath: string
+): Promise<Config> {
   try {
-    // Read all files in the directory
     const files = await fs.promises.readdir(directoryPath);
 
-    // Find the first .ini file
     const iniFile = files.find(
       (file) => path.extname(file).toLowerCase() === ".ini"
     );
 
     if (!iniFile) {
-      throw new Error("No .ini file found in the directory");
+      console.warn("No .ini file found. Using default empty configuration.");
+      const emptyConfig: Config = {};
+      return emptyConfig;
     }
 
-    // Read the .ini file content
     const filePath = path.join(directoryPath, iniFile);
     const content = await fs.promises.readFile(filePath, "utf8");
-
-    // Parse the content
     const config = parseIniContent(content);
 
     return config;
-  } catch {
-    throw new Error(`Error reading config...`);
+  } catch (error) {
+    console.error(
+      "Error reading config, falling back to default empty configuration:",
+      error
+    );
     const emptyConfig: Config = {};
     return emptyConfig;
   }

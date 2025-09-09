@@ -15,7 +15,8 @@ import { sendDataToScreen } from "../services/screenService.js";
 export function setupDataHandelers(
   mainWindow: BrowserWindow,
   configDirPath: string | null,
-  config: Config
+  config: Config,
+  launchDirectory: string
 ) {
   ipcMainHandle("getConfig", () => {
     return getConfig();
@@ -30,7 +31,7 @@ export function setupDataHandelers(
   });
 
   ipcMainHandle("getConfigPath", () => {
-    return getConfigPath();
+    return getConfigPath(undefined, mainWindow);
   });
 
   ipcMainHandle("selectConfigPath", () => {
@@ -38,7 +39,7 @@ export function setupDataHandelers(
   });
 
   ipcMainHandle("setConfigPathToDefault", () => {
-    return setConfigPathToDefault(mainWindow);
+    return setConfigPathToDefault(mainWindow, launchDirectory);
   });
 
   ipcMainHandle("getLogoBase64", () => {

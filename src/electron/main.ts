@@ -4,27 +4,23 @@ import { setupIPC } from "./ipc/ipcManager.js";
 import { createMenu } from "./windows/menu.js";
 import {
   getConfigPath,
-  initiateConfigPathIfUnavailable,
   readConfigFromDirectory,
 } from "./services/dataService.js";
 
-app.on("ready", () => {
+app.on("ready", async () => {
+  const launchDirectory = process.cwd();
+  console.log("Current Working Dir.:", launchDirectory);
+
   const mainWindow = initiateMainWindow();
 
-  initiateConfigPathIfUnavailable(mainWindow);
-  const configDirPath = getConfigPath();
-  //initiateConfigFileIfUnavaiable(configDirPath);
+  const configDirPath = getConfigPath(launchDirectory, mainWindow);
+  console.log("Config Dir Path loaded:", configDirPath);
 
-  readConfigFromDirectory(configDirPath === null ? "" : configDirPath)
-    .then((config: Config) => {
-      console.log("Config loaded successfully:", config);
-      setupIPC(mainWindow, configDirPath, config);
-    })
-    .catch((error) => {
-      console.error("Failed to load config:", error);
-      const fallbackConfig: Config = {};
-      setupIPC(mainWindow, configDirPath, fallbackConfig);
-    });
+  const config = await readConfigFromDirectory(configDirPath);
+
+  console.log("Config loaded:", config);
+
+  setupIPC(mainWindow, configDirPath, config, launchDirectory);
 
   createMenu(mainWindow);
 });
