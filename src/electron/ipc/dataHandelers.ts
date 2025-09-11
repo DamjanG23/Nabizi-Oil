@@ -31,7 +31,7 @@ export function setupDataHandelers(
   });
 
   ipcMainHandle("getConfigPath", () => {
-    return getConfigPath(undefined, mainWindow);
+    return getConfigPath(undefined);
   });
 
   ipcMainHandle("selectConfigPath", () => {

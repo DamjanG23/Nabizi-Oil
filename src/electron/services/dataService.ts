@@ -4,7 +4,14 @@ import fs from "fs";
 import path from "path";
 import { app } from "electron";
 
-const CONFIG_PATH_FILE = path.join(app.getPath("userData"), "config-path.json");
+const jsonDataPath = path.join(app.getPath("userData"), "jsonData");
+
+if (!fs.existsSync(jsonDataPath)) {
+  fs.mkdirSync(jsonDataPath, { recursive: true });
+}
+
+const CONFIG_PATH_FILE = path.join(jsonDataPath, "config-path.json");
+const SAVED_FUEL_ITEMS = path.join(jsonDataPath, "saved-fuel-items.json");
 
 export function getConfig() {
   const config = "match config 123";
@@ -32,11 +39,9 @@ export function loadConfig(window: BrowserWindow): void {
   ipcWebContentsSend("onFuelItemsLoaded", window.webContents, demoFuelList);
 }
 
-export function saveConfigPath(
-  configPath: string,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  window: BrowserWindow
-): void {
+// ----------------------------------------------------------------------------------------- //
+
+export function saveConfigPath(configPath: string): void {
   const data: ConfigPathData = { configPath };
 
   fs.writeFileSync(CONFIG_PATH_FILE, JSON.stringify(data, null, 2));
@@ -46,12 +51,9 @@ export function saveConfigPath(
   app.exit();
 }
 
-export function getConfigPath(
-  launchDirectory: string = process.cwd(),
-  window: BrowserWindow
-): string {
+export function getConfigPath(launchDirectory: string = process.cwd()): string {
   if (!fs.existsSync(CONFIG_PATH_FILE)) {
-    saveConfigPath(launchDirectory, window);
+    saveConfigPath(launchDirectory);
     return launchDirectory;
   }
 
@@ -82,7 +84,7 @@ export async function selectConfigPath(
   }
 
   const selectedPath = result.filePaths[0];
-  saveConfigPath(selectedPath, mainWindow);
+  saveConfigPath(selectedPath);
   return selectedPath;
 }
 
@@ -90,7 +92,7 @@ export function setConfigPathToDefault(
   mainWindow: BrowserWindow,
   launchDirectory: string
 ): string {
-  saveConfigPath(launchDirectory, mainWindow);
+  saveConfigPath(launchDirectory);
   return launchDirectory;
 }
 
@@ -290,4 +292,65 @@ export function getLogoBase64(
 
 export function getFuelItems(config: Config): string[] {
   return config.fuelNames ? config.fuelNames : [];
+}
+
+// -----------------------------------------------------------------------------
+
+export function saveFuelItems(fuelItems: FuelItem[] = []) {
+  fs.writeFileSync(SAVED_FUEL_ITEMS, JSON.stringify(fuelItems, null, 2));
+}
+
+export function getSavedFuelItems() {
+  if (!fs.existsSync(SAVED_FUEL_ITEMS)) {
+    saveFuelItems();
+    return [];
+  }
+
+  try {
+    const fuelItems: FuelItem[] = JSON.parse(
+      fs.readFileSync(SAVED_FUEL_ITEMS, "utf-8")
+    );
+    return fuelItems;
+  } catch (error) {
+    console.error(
+      "Failed to parse savedFuelItems, returning empty array:",
+      error
+    );
+    return [];
+  }
+}
+
+export function createCurrentFuelItems(
+  savedFuelItems: FuelItem[],
+  fuelItemsOrder?: string[]
+): FuelItem[] {
+  if (!fuelItemsOrder || fuelItemsOrder.length === 0) {
+    return [];
+  }
+
+  const savedItemsMap = new Map(
+    savedFuelItems.map((item) => [item.name, item])
+  );
+
+  let nextId =
+    savedFuelItems.reduce((maxId, item) => Math.max(item.id, maxId), 0) + 1;
+
+  const currentFuelItems = fuelItemsOrder.map((fuelName): FuelItem => {
+    const existingItem = savedItemsMap.get(fuelName);
+
+    if (existingItem) {
+      return existingItem;
+    }
+
+    const newItem: FuelItem = {
+      id: nextId,
+      name: fuelName,
+      price: 0,
+    };
+
+    nextId++;
+    return newItem;
+  });
+
+  return currentFuelItems;
 }
