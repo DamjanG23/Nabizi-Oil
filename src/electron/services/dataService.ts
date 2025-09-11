@@ -290,8 +290,8 @@ export function getLogoBase64(
   }
 }
 
-export function getFuelItems(config: Config): string[] {
-  return config.fuelNames ? config.fuelNames : [];
+export function getFuelItems(fuelItems: FuelItem[]): FuelItem[] {
+  return fuelItems;
 }
 
 // -----------------------------------------------------------------------------

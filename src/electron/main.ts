@@ -33,7 +33,13 @@ app.on("ready", async () => {
 
   createMenu(mainWindow);
 
-  setupIPC(mainWindow, configDirPath, config, launchDirectory);
+  setupIPC(
+    mainWindow,
+    configDirPath,
+    config,
+    launchDirectory,
+    currentFuelItems
+  );
 });
 
 app.on("window-all-closed", () => {

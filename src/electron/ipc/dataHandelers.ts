@@ -6,6 +6,7 @@ import {
   getFuelItems,
   getLogoBase64,
   loadConfig,
+  saveFuelItems,
   selectConfigPath,
   setConfigPathToDefault,
 } from "../services/dataService.js";
@@ -16,7 +17,8 @@ export function setupDataHandelers(
   mainWindow: BrowserWindow,
   configDirPath: string | null,
   config: Config,
-  launchDirectory: string
+  launchDirectory: string,
+  currentFuelItems: FuelItem[]
 ) {
   ipcMainHandle("getConfig", () => {
     return getConfig();
@@ -47,10 +49,14 @@ export function setupDataHandelers(
   });
 
   ipcMainHandle("getFuelItems", () => {
-    return getFuelItems(config);
+    return getFuelItems(currentFuelItems);
   });
 
   ipcMainOn("sendDataToScreen", (fuelItems) => {
     sendDataToScreen(fuelItems, config);
+  });
+
+  ipcMainOn("saveFuelItems", (fuelItems) => {
+    saveFuelItems(fuelItems);
   });
 }

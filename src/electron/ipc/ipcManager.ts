@@ -5,7 +5,14 @@ export function setupIPC(
   mainWindow: BrowserWindow,
   configDirPath: string,
   config: Config,
-  launchDirectory: string
+  launchDirectory: string,
+  currentFuelItems: FuelItem[]
 ) {
-  setupDataHandelers(mainWindow, configDirPath, config, launchDirectory);
+  setupDataHandelers(
+    mainWindow,
+    configDirPath,
+    config,
+    launchDirectory,
+    currentFuelItems
+  );
 }

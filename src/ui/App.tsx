@@ -9,13 +9,7 @@ function App() {
   useEffect(() => {
     const loadFuelItems = async () => {
       try {
-        const fuelNames = await window.electron.getFuelItems();
-        // Convert string[] to FuelItem[] with generated IDs and default prices
-        const fuelItems: FuelItem[] = fuelNames.map((name, index) => ({
-          id: index + 1,
-          name: name,
-          price: 0,
-        }));
+        const fuelItems = await window.electron.getFuelItems();
         setFuelList(fuelItems);
       } catch (error) {
         console.error("Failed to load fuel items:", error);
