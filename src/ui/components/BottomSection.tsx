@@ -11,11 +11,11 @@ export function BottomSection({ fuelList }: BottomSectionProps) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const drawerRef = useRef<HTMLDivElement>(null);
 
-  // const handleSend = () => {
-  //   console.log("Fuel data to send:", fuelList);
-  //   alert("Data ready to send!");
-  //   window.electron.sendDataToScreen(fuelList);
-  // };
+  const handleSend = () => {
+    console.log("Fuel data to send:", fuelList);
+    alert("Data ready to save and send to screen!");
+    window.electron.sendDataToScreen(fuelList);
+  };
 
   const handleSave = () => {
     console.log("Fuel data to save:", fuelList);
@@ -50,7 +50,7 @@ export function BottomSection({ fuelList }: BottomSectionProps) {
         <button className="send-button" onClick={handleSave}>
           Save
         </button>
-        <button className="send-button" onClick={/*handleSend*/ handleSave}>
+        <button className="send-button" onClick={handleSend}>
           Save & Send
         </button>
         <button

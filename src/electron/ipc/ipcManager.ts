@@ -6,13 +6,13 @@ export function setupIPC(
   configDirPath: string,
   config: Config,
   launchDirectory: string,
-  currentFuelItems: FuelItem[]
+  initialFuelItems: FuelItem[]
 ) {
   setupDataHandelers(
     mainWindow,
     configDirPath,
     config,
     launchDirectory,
-    currentFuelItems
+    initialFuelItems
   );
 }

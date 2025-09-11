@@ -18,7 +18,7 @@ export function setupDataHandelers(
   configDirPath: string | null,
   config: Config,
   launchDirectory: string,
-  currentFuelItems: FuelItem[]
+  initialFuelItems: FuelItem[]
 ) {
   ipcMainHandle("getConfig", () => {
     return getConfig();
@@ -49,10 +49,11 @@ export function setupDataHandelers(
   });
 
   ipcMainHandle("getFuelItems", () => {
-    return getFuelItems(currentFuelItems);
+    return getFuelItems(initialFuelItems);
   });
 
   ipcMainOn("sendDataToScreen", (fuelItems) => {
+    saveFuelItems(fuelItems);
     sendDataToScreen(fuelItems, config);
   });
 

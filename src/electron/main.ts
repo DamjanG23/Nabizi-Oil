@@ -25,11 +25,11 @@ app.on("ready", async () => {
   const savedFuelItems: FuelItem[] = getSavedFuelItems();
   console.log("Saved Fuel Items loaded:", savedFuelItems);
 
-  const currentFuelItems: FuelItem[] = createCurrentFuelItems(
+  const initialFuelItems: FuelItem[] = createCurrentFuelItems(
     savedFuelItems,
     config.fuelNames
   );
-  console.log("Current Fuel Items:", currentFuelItems);
+  console.log("Current Fuel Items:", initialFuelItems);
 
   createMenu(mainWindow);
 
@@ -38,7 +38,7 @@ app.on("ready", async () => {
     configDirPath,
     config,
     launchDirectory,
-    currentFuelItems
+    initialFuelItems
   );
 });
 
