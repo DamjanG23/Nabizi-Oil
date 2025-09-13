@@ -35,9 +35,16 @@ type ConfigPathData = {
   configPath: string;
 };
 
+type RegularUpdateData = {
+  isRegularUpdateEnabled: boolean;
+  regularUpdateTime: string;
+};
+
 type EventPayloadMaping = {
   getConfig: MatchConfig;
   createNewMatch: string;
+
+  // ------------------------------------
 
   onFuelItemsLoaded: FuelItem[];
   loadConfig: void;
@@ -49,6 +56,11 @@ type EventPayloadMaping = {
   getFuelItems: FuelItem[];
   sendDataToScreen: FuelItem[];
   saveFuelItems: FuelItem[];
+  regularUpdateData: RegularUpdateData;
+
+  // REGULAR UPDATE ----------------------------------
+  getRegularUpdateData: RegularUpdateData;
+  toggleRegularUpdate: void;
 };
 
 type UnsubscribeFunction = () => void;
@@ -83,5 +95,14 @@ interface Window {
     sendDataToScreen: (fuelItems: FuelItem[]) => void;
 
     saveFuelItems: (fuelItems: FuelItem[]) => void;
+
+    // Regular Update Data ---------------------------------------
+    regularUpdateData: (
+      callback: (regularUpdateData: RegularUpdateData) => void
+    ) => UnsubscribeFunction;
+
+    getRegularUpdateData: () => Promise<RegularUpdateData>;
+
+    toggleRegularUpdate: () => Promise<void>;
   };
 }

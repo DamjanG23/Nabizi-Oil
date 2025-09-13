@@ -354,3 +354,135 @@ export function createCurrentFuelItems(
 
   return currentFuelItems;
 }
+
+// -------------------------------- REGULAR UPDATE ---------------------------------------------
+
+const REGULAR_UPDATE = path.join(jsonDataPath, "regular-update.json");
+
+const defaultRegularUpdateData: RegularUpdateData = {
+  isRegularUpdateEnabled: false,
+  regularUpdateTime: "00:00",
+};
+
+export function saveRegularUpdateData(
+  isRegularUpdateEnabled: boolean = false,
+  regularUpdateTime: string = "00:00"
+): RegularUpdateData {
+  const data: RegularUpdateData = { isRegularUpdateEnabled, regularUpdateTime };
+
+  fs.writeFileSync(REGULAR_UPDATE, JSON.stringify(data, null, 2));
+
+  return data;
+}
+
+export function getRegularUpdateData(): RegularUpdateData {
+  if (!fs.existsSync(REGULAR_UPDATE)) {
+    const regularUpdateDataSaved = saveRegularUpdateData();
+    return regularUpdateDataSaved;
+  }
+
+  try {
+    const regularUpdateData: RegularUpdateData = JSON.parse(
+      fs.readFileSync(REGULAR_UPDATE, "utf-8")
+    );
+    return regularUpdateData;
+  } catch (error) {
+    console.error(
+      "Failed to parse regularUpdateData, returning default:",
+      error
+    );
+    return defaultRegularUpdateData;
+  }
+}
+
+export function getIsRegularUpdateEnabled(): boolean {
+  if (!fs.existsSync(REGULAR_UPDATE)) {
+    saveRegularUpdateData();
+    return false;
+  }
+
+  try {
+    const regularUpdateData: RegularUpdateData = JSON.parse(
+      fs.readFileSync(REGULAR_UPDATE, "utf-8")
+    );
+    return regularUpdateData.isRegularUpdateEnabled;
+  } catch (error) {
+    console.error(
+      "Failed to parse regularUpdateData, returning default false:",
+      error
+    );
+    return false;
+  }
+}
+
+export function getRegularUpdateTime(): string {
+  if (!fs.existsSync(REGULAR_UPDATE)) {
+    saveRegularUpdateData();
+    return "00:00";
+  }
+
+  try {
+    const regularUpdateData: RegularUpdateData = JSON.parse(
+      fs.readFileSync(REGULAR_UPDATE, "utf-8")
+    );
+    return regularUpdateData.regularUpdateTime;
+  } catch (error) {
+    console.error(
+      "Failed to parse regularUpdateData, returning default time:",
+      error
+    );
+    return "00:00";
+  }
+}
+
+export function setIsRegularUpdateEnabled(
+  isRegularUpdateEnabled: boolean = false
+): RegularUpdateData {
+  const currentRegularUpdateTime: string = getRegularUpdateTime();
+  const data: RegularUpdateData = {
+    isRegularUpdateEnabled,
+    regularUpdateTime: currentRegularUpdateTime,
+  };
+
+  fs.writeFileSync(REGULAR_UPDATE, JSON.stringify(data, null, 2));
+
+  return data;
+}
+
+export function toggleRegularUpdate(): RegularUpdateData {
+  const currentRegularUpdateData: RegularUpdateData = getRegularUpdateData();
+
+  const data: RegularUpdateData = {
+    isRegularUpdateEnabled: !currentRegularUpdateData.isRegularUpdateEnabled,
+    regularUpdateTime: currentRegularUpdateData.regularUpdateTime,
+  };
+
+  fs.writeFileSync(REGULAR_UPDATE, JSON.stringify(data, null, 2));
+
+  return data;
+}
+
+export function setRegularUpdateTime(
+  regularUpdateTime: string = "00:00"
+): RegularUpdateData {
+  const currentIsRegularUpdateEnabled: boolean = getIsRegularUpdateEnabled();
+  const data: RegularUpdateData = {
+    isRegularUpdateEnabled: currentIsRegularUpdateEnabled,
+    regularUpdateTime,
+  };
+
+  fs.writeFileSync(REGULAR_UPDATE, JSON.stringify(data, null, 2));
+
+  return data;
+}
+
+export function sendRegularUpdateData(
+  regularUpdateData: RegularUpdateData,
+  window: BrowserWindow
+): void {
+  ipcWebContentsSend(
+    "regularUpdateData",
+    window.webContents,
+    regularUpdateData
+  );
+}

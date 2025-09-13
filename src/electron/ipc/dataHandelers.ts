@@ -5,10 +5,13 @@ import {
   getConfigPath,
   getFuelItems,
   getLogoBase64,
+  getRegularUpdateData,
   loadConfig,
   saveFuelItems,
   selectConfigPath,
+  sendRegularUpdateData,
   setConfigPathToDefault,
+  toggleRegularUpdate,
 } from "../services/dataService.js";
 import { ipcMainHandle, ipcMainOn } from "../utils/util.js";
 import { sendDataToScreen } from "../services/screenService.js";
@@ -59,5 +62,16 @@ export function setupDataHandelers(
 
   ipcMainOn("saveFuelItems", (fuelItems) => {
     saveFuelItems(fuelItems);
+  });
+
+  // REGULAR UPDATE -----------------------------------------------
+
+  ipcMainHandle("getRegularUpdateData", () => {
+    return getRegularUpdateData();
+  });
+
+  ipcMainHandle("toggleRegularUpdate", () => {
+    const regularUpdateData = toggleRegularUpdate();
+    sendRegularUpdateData(regularUpdateData, mainWindow);
   });
 }

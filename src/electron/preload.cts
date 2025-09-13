@@ -52,6 +52,21 @@ electron.contextBridge.exposeInMainWorld("electron", {
   saveFuelItems: (fuelItems) => {
     ipcSend("saveFuelItems", fuelItems);
   },
+
+  // ------------- REGULAR UPDATE ----------------------
+
+  regularUpdateData: (callback) =>
+    ipcOn("regularUpdateData", (regularUpdateData) => {
+      callback(regularUpdateData);
+    }),
+
+  getRegularUpdateData: () => {
+    return ipcInvoke("getRegularUpdateData");
+  },
+
+  toggleRegularUpdate: () => {
+    return ipcInvoke("toggleRegularUpdate");
+  },
 } satisfies Window["electron"]);
 
 function ipcInvoke<Key extends keyof EventPayloadMaping>(
