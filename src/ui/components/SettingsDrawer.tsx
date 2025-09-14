@@ -1,21 +1,21 @@
 import { useEffect, useState } from "react";
-import { TimeDialog } from "./timeDialog/TimeDialog.tsx";
 
 interface SettingsDrawerProps {
   drawerRef: React.RefObject<HTMLDivElement | null>;
-  setIsDialogOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  setIsConfigLocationDialogOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  setIsTimeDialogOpen: React.Dispatch<React.SetStateAction<boolean>>;
   setIsDrawerOpen: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 export function SettingsDrawer({
   drawerRef,
-  setIsDialogOpen,
+  setIsConfigLocationDialogOpen,
+  setIsTimeDialogOpen,
   setIsDrawerOpen,
 }: SettingsDrawerProps) {
   const [regularUpdateData, setRegularUpdateData] = useState<RegularUpdateData>(
     { isRegularUpdateEnabled: true, regularUpdateTime: "00:00" }
   );
-  const [isTimeDialogOpen, setIsTimeDialogOpen] = useState(false);
 
   useEffect(() => {
     const fetchRegularUpdateData = async () => {
@@ -43,7 +43,7 @@ export function SettingsDrawer({
         <button
           className="config-location-button"
           onClick={() => {
-            setIsDialogOpen(true);
+            setIsConfigLocationDialogOpen(true);
             setIsDrawerOpen(false);
           }}
         >
@@ -64,7 +64,6 @@ export function SettingsDrawer({
         </div>
 
         <div className="setting-option">
-          {/* A nice touch is to display the current time in the label */}
           <label>
             Update Time (
             {regularUpdateData.isRegularUpdateEnabled
@@ -76,7 +75,7 @@ export function SettingsDrawer({
             className="config-time-button"
             disabled={!regularUpdateData?.isRegularUpdateEnabled}
             onClick={() => {
-              setIsTimeDialogOpen(true); // 2. Open the dialog on click
+              setIsTimeDialogOpen(true);
               setIsDrawerOpen(false);
             }}
           >
@@ -84,12 +83,6 @@ export function SettingsDrawer({
           </button>
         </div>
       </div>
-      <TimeDialog
-        isOpen={isTimeDialogOpen}
-        onClose={() => setIsTimeDialogOpen(false)}
-        // onSave={handleTimeSave}
-        currentTime={regularUpdateData.regularUpdateTime}
-      />
     </>
   );
 }

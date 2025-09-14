@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { SettingsDrawer } from "./../SettingsDrawer";
 import { ConfigLocationDialog } from "./../ConfigLocationDialog";
+import "./bottomSection.css";
+import { TimeDialog } from "../timeDialog/TimeDialog";
 
 interface BottomSectionProps {
   fuelList: FuelItem[];
@@ -8,7 +10,9 @@ interface BottomSectionProps {
 
 export function BottomSection({ fuelList }: BottomSectionProps) {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-  const [isConfigLocationDialogOpen, setIsDialogOpen] = useState(false);
+  const [isConfigLocationDialogOpen, setIsConfigLocationDialogOpen] =
+    useState(false);
+  const [isTimeDialogOpen, setIsTimeDialogOpen] = useState(false);
   const drawerRef = useRef<HTMLDivElement>(null);
 
   const handleSend = () => {
@@ -63,13 +67,18 @@ export function BottomSection({ fuelList }: BottomSectionProps) {
       {isDrawerOpen && (
         <SettingsDrawer
           drawerRef={drawerRef}
-          setIsDialogOpen={setIsDialogOpen}
+          setIsConfigLocationDialogOpen={setIsConfigLocationDialogOpen}
+          setIsTimeDialogOpen={setIsTimeDialogOpen}
           setIsDrawerOpen={setIsDrawerOpen}
         />
       )}
 
       {isConfigLocationDialogOpen && (
-        <ConfigLocationDialog setIsDialogOpen={setIsDialogOpen} />
+        <ConfigLocationDialog setIsDialogOpen={setIsConfigLocationDialogOpen} />
+      )}
+
+      {isTimeDialogOpen && (
+        <TimeDialog setIsTimeDialogOpen={setIsTimeDialogOpen} />
       )}
     </>
   );
