@@ -1,0 +1,72 @@
+.fuel-list-container {
+  flex: 1;
+  overflow: hidden;
+  padding: 20px;
+  min-height: 0;
+}
+
+.fuel-list {
+  height: 100%;
+  overflow-y: auto;
+  padding-right: 10px;
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+.fuel-item {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 15px;
+  padding: 15px;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease;
+}
+
+.fuel-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.fuel-name-input,
+.fuel-price-input {
+  padding: 12px;
+  border: 2px solid #ddd;
+  border-radius: 6px;
+  font-size: 16px;
+  transition: border-color 0.3s ease;
+}
+
+.fuel-name-input:focus,
+.fuel-price-input:focus {
+  outline: none;
+  border-color: #3498db;
+}
+
+.fuel-name-input {
+  flex: 2;
+}
+
+.fuel-price-input {
+  flex: 1;
+  text-align: right;
+}
+
+.fuel-list::-webkit-scrollbar {
+  width: 8px;
+}
+
+.fuel-list::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+.fuel-list::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 10px;
+}
+
+.fuel-list::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}

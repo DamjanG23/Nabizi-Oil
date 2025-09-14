@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import TimeDialog from "./timeDialog/TimeDialog";
 
 interface SettingsDrawerProps {
   drawerRef: React.RefObject<HTMLDivElement | null>;
@@ -11,8 +12,10 @@ export function SettingsDrawer({
   setIsDialogOpen,
   setIsDrawerOpen,
 }: SettingsDrawerProps) {
-  const [regularUpdateData, setRegularUpdateData] =
-    useState<RegularUpdateData>();
+  const [regularUpdateData, setRegularUpdateData] = useState<RegularUpdateData>(
+    { isRegularUpdateEnabled: true, regularUpdateTime: "00:00" }
+  );
+  const [isTimeDialogOpen, setIsTimeDialogOpen] = useState(false);
 
   useEffect(() => {
     const fetchRegularUpdateData = async () => {
@@ -34,30 +37,59 @@ export function SettingsDrawer({
   }, []);
 
   return (
-    <div className="settings-drawer" ref={drawerRef}>
-      <h2>Settings</h2>
-      <button
-        className="config-location-button"
-        onClick={() => {
-          setIsDialogOpen(true);
-          setIsDrawerOpen(false);
-        }}
-      >
-        Config Location
-      </button>
+    <>
+      <div className="settings-drawer" ref={drawerRef}>
+        <h2>Settings</h2>
+        <button
+          className="config-location-button"
+          onClick={() => {
+            setIsDialogOpen(true);
+            setIsDrawerOpen(false);
+          }}
+        >
+          Config Location
+        </button>
 
-      <div className="setting-option">
-        <label htmlFor="regular-update-toggle">Regular Update</label>
-        <label className="toggle-switch">
-          <input
-            id="regular-update-toggle"
-            type="checkbox"
-            checked={regularUpdateData?.isRegularUpdateEnabled}
-            onChange={() => window.electron.toggleRegularUpdate()}
-          />
-          <span className="slider"></span>
-        </label>
+        <div className="setting-option">
+          <label htmlFor="regular-update-toggle">Regular Update</label>
+          <label className="toggle-switch">
+            <input
+              id="regular-update-toggle"
+              type="checkbox"
+              checked={regularUpdateData?.isRegularUpdateEnabled}
+              onChange={() => window.electron.toggleRegularUpdate()}
+            />
+            <span className="slider"></span>
+          </label>
+        </div>
+
+        <div className="setting-option">
+          {/* A nice touch is to display the current time in the label */}
+          <label>
+            Update Time (
+            {regularUpdateData.isRegularUpdateEnabled
+              ? regularUpdateData.regularUpdateTime
+              : "--:--"}
+            )
+          </label>
+          <button
+            className="config-time-button"
+            disabled={!regularUpdateData?.isRegularUpdateEnabled}
+            onClick={() => {
+              setIsTimeDialogOpen(true); // 2. Open the dialog on click
+              setIsDrawerOpen(false);
+            }}
+          >
+            Set Time
+          </button>
+        </div>
       </div>
-    </div>
+      <TimeDialog
+        isOpen={isTimeDialogOpen}
+        onClose={() => setIsTimeDialogOpen(false)}
+        // onSave={handleTimeSave}
+        currentTime={regularUpdateData.regularUpdateTime}
+      />
+    </>
   );
 }

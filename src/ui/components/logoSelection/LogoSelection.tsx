@@ -1,13 +1,13 @@
 import { useEffect, useState } from "react";
-import "../styles/App.css";
+import "../../styles/App.css";
+import "./logoSelection.css";
 
 export function LogoSelection() {
   useEffect(() => {
-    const fetchLogo = async () => {
+    async function fetchLogo() {
       const logoBase64 = await window.electron.getLogoBase64();
       setLogo(logoBase64 ?? undefined);
-    };
-
+    }
     fetchLogo();
   }, []);
 
@@ -28,9 +28,6 @@ export function LogoSelection() {
               console.log("Image src:", logo);
             }}
           />
-          {/* <button className="remove-logo-button" onClick={() => {}}>
-            ✕
-          </button> */}
         </div>
       ) : (
         <button className="upload-button" onClick={() => {}}>
