@@ -23,61 +23,6 @@ html {
   overflow: hidden;
 }
 
-/* Send button section */
-.send-section {
-  gap: 16px;
-  padding: 20px;
-  background-color: white;
-  border-top: 1px solid #ddd;
-  display: flex;
-  justify-content: center;
-}
-
-.send-button {
-  background-color: #27ae60;
-  color: white;
-  border: none;
-  padding: 15px 40px;
-  font-size: 18px;
-  font-weight: bold;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: background-color 0.3s ease, transform 0.2s ease;
-}
-
-.send-button:hover {
-  background-color: #219a52;
-  transform: translateY(-2px);
-}
-
-.send-button:active {
-  transform: translateY(0);
-}
-
-/* Settings cog button */
-.settings-button {
-  background: none;
-  border: none;
-  font-size: 24px;
-  margin-left: 20px;
-  cursor: pointer;
-  transition: transform 0.2s ease;
-}
-
-.settings-button:hover {
-  transform: rotate(20deg);
-}
-
-/* Modify send-section to space between */
-.send-section {
-  padding: 20px;
-  background-color: white;
-  border-top: 1px solid #ddd;
-  display: flex;
-  justify-content: center;
-  position: relative;
-}
-
 /* Settings drawer */
 .settings-drawer {
   position: fixed;

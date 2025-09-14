@@ -6,7 +6,6 @@ interface FuelItemsListProps {
 }
 
 export function FuelItemsList({ fuelList, setFuelList }: FuelItemsListProps) {
-  // Function to handle changes in fuel name
   const handleNameChange = (id: number, newName: string) => {
     setFuelList((prevList) =>
       prevList.map((item) =>
@@ -15,7 +14,6 @@ export function FuelItemsList({ fuelList, setFuelList }: FuelItemsListProps) {
     );
   };
 
-  // Function to handle changes in fuel price
   const handlePriceChange = (id: number, newPrice: string) => {
     const price = parseFloat(newPrice) || 0;
     setFuelList((prevList) =>

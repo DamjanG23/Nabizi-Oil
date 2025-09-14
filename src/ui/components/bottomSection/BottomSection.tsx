@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
-import { SettingsDrawer } from "./SettingsDrawer";
-import { ConfigLocationDialog } from "./ConfigLocationDialog";
+import { SettingsDrawer } from "./../SettingsDrawer";
+import { ConfigLocationDialog } from "./../ConfigLocationDialog";
 
 interface BottomSectionProps {
   fuelList: FuelItem[];
@@ -8,7 +8,7 @@ interface BottomSectionProps {
 
 export function BottomSection({ fuelList }: BottomSectionProps) {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isConfigLocationDialogOpen, setIsDialogOpen] = useState(false);
   const drawerRef = useRef<HTMLDivElement>(null);
 
   const handleSend = () => {
@@ -38,7 +38,6 @@ export function BottomSection({ fuelList }: BottomSectionProps) {
     } else {
       document.removeEventListener("mousedown", handleClickOutside);
     }
-
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
@@ -69,7 +68,7 @@ export function BottomSection({ fuelList }: BottomSectionProps) {
         />
       )}
 
-      {isDialogOpen && (
+      {isConfigLocationDialogOpen && (
         <ConfigLocationDialog setIsDialogOpen={setIsDialogOpen} />
       )}
     </>

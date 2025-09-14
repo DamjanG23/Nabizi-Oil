@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import TimeDialog from "./timeDialog/TimeDialog";
+import { TimeDialog } from "./timeDialog/TimeDialog.tsx";
 
 interface SettingsDrawerProps {
   drawerRef: React.RefObject<HTMLDivElement | null>;

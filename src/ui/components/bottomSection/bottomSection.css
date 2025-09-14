@@ -1,0 +1,43 @@
+.send-section {
+  gap: 16px;
+  padding: 20px;
+  background-color: white;
+  border-top: 1px solid #ddd;
+  display: flex;
+  justify-content: center;
+  position: relative;
+}
+
+.send-button {
+  background-color: #27ae60;
+  color: white;
+  border: none;
+  padding: 15px 40px;
+  font-size: 18px;
+  font-weight: bold;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.send-button:hover {
+  background-color: #219a52;
+  transform: translateY(-2px);
+}
+
+.send-button:active {
+  transform: translateY(0);
+}
+
+.settings-button {
+  background: none;
+  border: none;
+  font-size: 24px;
+  margin-left: 20px;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.settings-button:hover {
+  transform: rotate(20deg);
+}

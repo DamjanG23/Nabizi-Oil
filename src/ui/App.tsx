@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import "./styles/App.css";
 import { LogoSelection } from "./components/logoSelection/LogoSelection";
-import { BottomSection } from "./components/BottomSection";
+import { BottomSection } from "./components/bottomSection/BottomSection";
 import { FuelItemsList } from "./components/fuelItemsList/FuelItemsList";
 
 function App() {
