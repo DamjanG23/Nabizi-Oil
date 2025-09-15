@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import "./settingsDrawer.css";
 
 interface SettingsDrawerProps {
   drawerRef: React.RefObject<HTMLDivElement | null>;

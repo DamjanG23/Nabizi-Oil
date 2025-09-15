@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import "./configLocationDialog.css";
 
 interface ConfigLocationDialogProps {
   setIsDialogOpen: React.Dispatch<React.SetStateAction<boolean>>;

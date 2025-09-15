@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
-import { SettingsDrawer } from "./../SettingsDrawer";
-import { ConfigLocationDialog } from "./../ConfigLocationDialog";
+import { SettingsDrawer } from "../settingsDrawer/SettingsDrawer";
+import { ConfigLocationDialog } from "../configLocationDialog/ConfigLocationDialog";
 import "./bottomSection.css";
 import { TimeDialog } from "../timeDialog/TimeDialog";
 
@@ -15,33 +15,30 @@ export function BottomSection({ fuelList }: BottomSectionProps) {
   const [isTimeDialogOpen, setIsTimeDialogOpen] = useState(false);
   const drawerRef = useRef<HTMLDivElement>(null);
 
-  const handleSend = () => {
+  function handleSend() {
     console.log("Fuel data to send:", fuelList);
     alert("Data ready to save and send to screen!");
     window.electron.sendDataToScreen(fuelList);
-  };
+  }
 
-  const handleSave = () => {
+  function handleSave() {
     console.log("Fuel data to save:", fuelList);
     alert("Data ready to save!");
     window.electron.saveFuelItems(fuelList);
-  };
+  }
 
-  const handleClickOutside = (event: MouseEvent) => {
+  function handleClickOutside(event: MouseEvent) {
     if (
       drawerRef.current &&
       !drawerRef.current.contains(event.target as Node)
     ) {
       setIsDrawerOpen(false);
     }
-  };
+  }
 
   useEffect(() => {
-    if (isDrawerOpen) {
+    if (isDrawerOpen)
       document.addEventListener("mousedown", handleClickOutside);
-    } else {
-      document.removeEventListener("mousedown", handleClickOutside);
-    }
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
