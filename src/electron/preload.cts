@@ -67,6 +67,10 @@ electron.contextBridge.exposeInMainWorld("electron", {
   toggleRegularUpdate: () => {
     return ipcInvoke("toggleRegularUpdate");
   },
+
+  setRegularUpdateTime: (regularUpdateTime) => {
+    ipcSend("setRegularUpdateTime", regularUpdateTime);
+  },
 } satisfies Window["electron"]);
 
 function ipcInvoke<Key extends keyof EventPayloadMaping>(

@@ -11,6 +11,7 @@ import {
   selectConfigPath,
   sendRegularUpdateData,
   setConfigPathToDefault,
+  setRegularUpdateTime,
   toggleRegularUpdate,
 } from "../services/dataService.js";
 import { ipcMainHandle, ipcMainOn } from "../utils/util.js";
@@ -72,6 +73,11 @@ export function setupDataHandelers(
 
   ipcMainHandle("toggleRegularUpdate", () => {
     const regularUpdateData = toggleRegularUpdate();
+    sendRegularUpdateData(regularUpdateData, mainWindow);
+  });
+
+  ipcMainOn("setRegularUpdateTime", (regularUpdateTime) => {
+    const regularUpdateData = setRegularUpdateTime(regularUpdateTime);
     sendRegularUpdateData(regularUpdateData, mainWindow);
   });
 }

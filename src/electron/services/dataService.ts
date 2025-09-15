@@ -133,13 +133,11 @@ function parseIniContent(content: string): Config {
   const config: Config = {};
   const lines = content.split("\n");
 
-  // Store fuel names temporarily
   const fuelNames: string[] = [];
 
   for (const line of lines) {
     const trimmedLine = line.trim();
 
-    // Skip empty lines and comments
     if (
       !trimmedLine ||
       trimmedLine.startsWith("#") ||
@@ -148,20 +146,16 @@ function parseIniContent(content: string): Config {
       continue;
     }
 
-    // Split by '=' and clean up the key-value pair
     const [key, ...valueParts] = trimmedLine.split("=");
     if (!key || valueParts.length === 0) continue;
 
     const cleanKey = key.trim();
     let value = valueParts.join("=").trim();
 
-    // --- New Change: Handle inline comments (like ';') ---
-    // This will strip out comments that appear after a value.
     if (value.includes(";")) {
       value = value.split(";")[0].trim();
     }
 
-    // Remove quotes if present
     if (
       (value.startsWith('"') && value.endsWith('"')) ||
       (value.startsWith("'") && value.endsWith("'"))
@@ -169,9 +163,7 @@ function parseIniContent(content: string): Config {
       value = value.slice(1, -1);
     }
 
-    // Map ini keys to Config properties
     switch (cleanKey) {
-      // --- Existing Cases ---
       case "DisplayIPAddress":
         config.displayIpAddress = value;
         break;
@@ -187,8 +179,6 @@ function parseIniContent(content: string): Config {
       case "AdjustTime":
         config.adjustTime = value;
         break;
-
-      // --- New Cases for the added fields ---
       case "ScreenWidth":
         config.screenWidth = parseInt(value, 10);
         break;
@@ -210,9 +200,11 @@ function parseIniContent(content: string): Config {
       case "FontHeight":
         config.fontHeight = parseInt(value, 10);
         break;
+      case "DecimalFontHeight":
+        config.decimalFontHeight = parseInt(value, 10);
+        break;
 
       default:
-        // Handle fuel names (Fuel1Name, Fuel2Name, etc.)
         if (cleanKey.startsWith("Fuel") && cleanKey.endsWith("Name")) {
           fuelNames.push(value);
         }
@@ -220,7 +212,6 @@ function parseIniContent(content: string): Config {
     }
   }
 
-  // Add fuel names array if we found any
   if (fuelNames.length > 0) {
     config.fuelNames = fuelNames;
   }

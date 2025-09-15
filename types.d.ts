@@ -23,6 +23,7 @@ type Config = {
   doubleSided?: string;
   fontName?: string;
   fontHeight?: number;
+  decimalFontHeight?: number;
 };
 
 type FuelItem = {
@@ -61,6 +62,7 @@ type EventPayloadMaping = {
   // REGULAR UPDATE ----------------------------------
   getRegularUpdateData: RegularUpdateData;
   toggleRegularUpdate: void;
+  setRegularUpdateTime: string;
 };
 
 type UnsubscribeFunction = () => void;
@@ -104,5 +106,7 @@ interface Window {
     getRegularUpdateData: () => Promise<RegularUpdateData>;
 
     toggleRegularUpdate: () => Promise<void>;
+
+    setRegularUpdateTime: (regularUpdateTime: strign) => void;
   };
 }

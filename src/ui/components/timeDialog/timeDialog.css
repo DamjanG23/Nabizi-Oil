@@ -1,71 +1,42 @@
-.dialog-overlay {
+.modal-dialog {
+  background-color: white;
+  padding: 30px;
+  border-radius: 10px;
+  width: 400px;
+  max-width: 90%;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  text-align: center;
+}
+
+.modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
-  width: 100vw;
-  height: 100vh;
-  background-color: rgba(0, 0, 0, 0.6);
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.4);
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 1000;
+  z-index: 2000;
 }
 
-.dialog-content {
-  background-color: #ffffff;
-  padding: 24px 32px;
-  border-radius: 8px;
-  box-shadow: 0 4px M12px rgba(0, 0, 0, 0.2);
-  width: 90%;
-  max-width: 400px;
-  text-align: center;
-}
-
-.dialog-content h2 {
-  margin-top: 0;
-}
-
-.time-input {
-  width: 150px;
-  padding: 8px;
-  margin: 20px 0;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  font-size: 1.5rem;
-  text-align: center;
-  cursor: pointer;
-}
-
-.dialog-actions {
+.dialog-buttons {
   display: flex;
-  justify-content: flex-end;
-  gap: 12px;
-  margin-top: 10px;
+  justify-content: space-between;
+  margin-top: 20px;
 }
 
-.dialog-actions button {
+.dialog-buttons button {
   padding: 10px 20px;
+  font-size: 14px;
   border: none;
-  border-radius: 5px;
+  border-radius: 6px;
   cursor: pointer;
-  font-weight: bold;
-  transition: background-color 0.2s;
+  transition: background-color 0.3s ease;
+  background-color: brown;
 }
 
-.button-primary {
-  background-color: #007bff;
-  color: white;
-}
-
-.button-primary:hover {
-  background-color: #0056b3;
-}
-
-.button-secondary {
-  background-color: #e9ecef;
-  color: #333;
-}
-
-.button-secondary:hover {
-  background-color: #d3d9df;
+.dialog-buttons button:hover {
+  opacity: 0.9;
 }
