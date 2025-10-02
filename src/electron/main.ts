@@ -11,35 +11,18 @@ import {
   setIsRegularUpdateEnabled,
 } from "./services/dataService.js";
 import { isUpdateSchedulerActive } from "./services/regularUpdateService.js";
+// import { sendDataToScreen } from "./services/screenService.js";
 
 app.on("ready", async () => {
   const args = process.argv.slice(1);
   console.log("argv:", args);
-  const hasScreenAutoUpdate = args.includes("--screenAutoUpdate");
-
-  console.log("screenAutoUpdate flag detected:", hasScreenAutoUpdate);
-
-  const savedIsSchedulerEnabled = getIsRegularUpdateEnabled();
-  console.log("savedIsSchedulerEnabled: ", savedIsSchedulerEnabled);
-  const isSchedulerActive = await isUpdateSchedulerActive();
-  console.log("isSchedulerActive checked: ", isSchedulerActive);
-
-  if (savedIsSchedulerEnabled !== isSchedulerActive) {
-    setIsRegularUpdateEnabled(isSchedulerActive);
-    console.log(
-      "regular update enabled data missaligned, changed to: ",
-      isSchedulerActive,
-      "\n"
-    );
-  }
+  const hasScreenAutoUpdateFlag = args.includes("--screenAutoUpdate");
 
   const launchDirectory = process.cwd();
   console.log("Current Working Dir.:", launchDirectory);
 
   const exePath = app.getPath("exe");
   console.log("Executable Path:", exePath);
-
-  const mainWindow = initiateMainWindow();
 
   const configDirPath = getConfigPath(launchDirectory);
   console.log("Config Dir Path loaded:", configDirPath);
@@ -51,30 +34,50 @@ app.on("ready", async () => {
   const savedFuelItems: FuelItem[] = getSavedFuelItems();
   console.log("Saved Fuel Items loaded:", savedFuelItems);
 
-  const initialFuelItems: FuelItem[] = createCurrentFuelItems(
-    savedFuelItems,
-    config.fuelNames
-  );
-  console.log("Current Fuel Items:", initialFuelItems);
+  if (hasScreenAutoUpdateFlag) {
+    //TODO: call the screen update function
+    //sendDataToScreen(savedFuelItems, config);
+    dialog.showMessageBoxSync({
+      type: "info",
+      title: "Screen Auto Update",
+      message: "App started with --screenAutoUpdate flag!",
+      buttons: ["OK"],
+    });
+    app.quit();
+  } else {
+    console.log("screenAutoUpdate flag detected:", hasScreenAutoUpdateFlag);
 
-  createMenu(mainWindow);
+    const savedIsSchedulerEnabled = getIsRegularUpdateEnabled();
+    console.log("savedIsSchedulerEnabled: ", savedIsSchedulerEnabled);
+    const isSchedulerActive = await isUpdateSchedulerActive();
+    console.log("isSchedulerActive checked: ", isSchedulerActive);
 
-  dialog.showMessageBoxSync({
-    type: "info",
-    title: "Screen Auto Update",
-    message: hasScreenAutoUpdate
-      ? "App started with --screenAutoUpdate!"
-      : "App not started with --screenAutoUpdate!",
-    buttons: ["OK"],
-  });
+    if (savedIsSchedulerEnabled !== isSchedulerActive) {
+      setIsRegularUpdateEnabled(isSchedulerActive);
+      console.log(
+        "regular update enabled data missaligned, changed to: ",
+        isSchedulerActive,
+        "\n"
+      );
+    }
 
-  setupIPC(
-    mainWindow,
-    configDirPath,
-    config,
-    launchDirectory,
-    initialFuelItems
-  );
+    const initialFuelItems: FuelItem[] = createCurrentFuelItems(
+      savedFuelItems,
+      config.fuelNames
+    );
+    console.log("Current Fuel Items:", initialFuelItems);
+
+    const mainWindow = initiateMainWindow();
+    createMenu(mainWindow);
+
+    setupIPC(
+      mainWindow,
+      configDirPath,
+      config,
+      launchDirectory,
+      initialFuelItems
+    );
+  }
 });
 
 app.on("window-all-closed", () => {
