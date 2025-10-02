@@ -6,6 +6,7 @@ import {
   getFuelItems,
   getLogoBase64,
   getRegularUpdateData,
+  getRegularUpdateTime,
   loadConfig,
   saveFuelItems,
   selectConfigPath,
@@ -16,13 +17,18 @@ import {
 } from "../services/dataService.js";
 import { ipcMainHandle, ipcMainOn } from "../utils/util.js";
 import { sendDataToScreen } from "../services/screenService.js";
+import {
+  createScheduledTask,
+  removeScheduledTask,
+} from "../services/regularUpdateService.js";
 
 export function setupDataHandelers(
   mainWindow: BrowserWindow,
   configDirPath: string | null,
   config: Config,
   launchDirectory: string,
-  initialFuelItems: FuelItem[]
+  initialFuelItems: FuelItem[],
+  exePath: string
 ) {
   ipcMainHandle("getConfig", () => {
     return getConfig();
@@ -73,6 +79,12 @@ export function setupDataHandelers(
 
   ipcMainHandle("toggleRegularUpdate", () => {
     const regularUpdateData = toggleRegularUpdate();
+    const time = getRegularUpdateTime();
+    if (regularUpdateData.isRegularUpdateEnabled) {
+      createScheduledTask(time, exePath);
+    } else {
+      removeScheduledTask(exePath);
+    }
     sendRegularUpdateData(regularUpdateData, mainWindow);
   });
 

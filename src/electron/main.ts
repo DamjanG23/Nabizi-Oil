@@ -5,13 +5,33 @@ import { createMenu } from "./windows/menu.js";
 import {
   createCurrentFuelItems,
   getConfigPath,
+  getIsRegularUpdateEnabled,
   getSavedFuelItems,
   readConfigFromDirectory,
+  setIsRegularUpdateEnabled,
 } from "./services/dataService.js";
+import { isUpdateSchedulerActive } from "./services/regularUpdateService.js";
 
 app.on("ready", async () => {
+  const savedIsSchedulerEnabled = getIsRegularUpdateEnabled();
+  console.log("savedIsSchedulerEnabled: ", savedIsSchedulerEnabled);
+  const isSchedulerActive = await isUpdateSchedulerActive();
+  console.log("isSchedulerActive checked: ", isSchedulerActive);
+
+  if (savedIsSchedulerEnabled !== isSchedulerActive) {
+    setIsRegularUpdateEnabled(isSchedulerActive);
+    console.log(
+      "regular update enabled data missaligned, changed to: ",
+      isSchedulerActive,
+      "\n"
+    );
+  }
+
   const launchDirectory = process.cwd();
   console.log("Current Working Dir.:", launchDirectory);
+
+  const exePath = process.execPath;
+  console.log("Executable Path:", exePath);
 
   const mainWindow = initiateMainWindow();
 
@@ -38,7 +58,8 @@ app.on("ready", async () => {
     configDirPath,
     config,
     launchDirectory,
-    initialFuelItems
+    initialFuelItems,
+    exePath
   );
 });
 
