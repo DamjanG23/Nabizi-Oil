@@ -27,8 +27,7 @@ export function setupDataHandelers(
   configDirPath: string | null,
   config: Config,
   launchDirectory: string,
-  initialFuelItems: FuelItem[],
-  exePath: string
+  initialFuelItems: FuelItem[]
 ) {
   ipcMainHandle("getConfig", () => {
     return getConfig();
@@ -81,7 +80,7 @@ export function setupDataHandelers(
     const regularUpdateData = toggleRegularUpdate();
     const time = getRegularUpdateTime();
     if (regularUpdateData.isRegularUpdateEnabled) {
-      createScheduledTask(time, exePath);
+      createScheduledTask(time);
     } else {
       removeScheduledTask();
     }

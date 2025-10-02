@@ -58,8 +58,7 @@ app.on("ready", async () => {
     configDirPath,
     config,
     launchDirectory,
-    initialFuelItems,
-    exePath
+    initialFuelItems
   );
 });
 

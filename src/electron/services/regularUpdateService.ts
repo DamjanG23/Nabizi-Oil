@@ -1,4 +1,10 @@
 import { exec } from "child_process";
+import { app } from "electron";
+import path from "path";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 export async function isUpdateSchedulerActive(
   taskName: string = "autoUpdaterTask"
@@ -22,12 +28,24 @@ export async function isUpdateSchedulerActive(
   }
 }
 
+function getAppExePath(): string {
+  if (app.isPackaged) {
+    return process.execPath;
+  } else {
+    return path.join(
+      __dirname,
+      "../../dist/win-unpacked/gas-station-totem.exe"
+    );
+  }
+}
+
 export async function createScheduledTask(
   time: string,
-  exePath: string,
   taskName: string = "autoUpdaterTask"
 ): Promise<boolean> {
   const platform = process.platform;
+  const exePath = getAppExePath();
+  console.log("Executable Path:", exePath);
 
   try {
     if (platform === "win32") {
