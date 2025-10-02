@@ -30,7 +30,7 @@ app.on("ready", async () => {
   const launchDirectory = process.cwd();
   console.log("Current Working Dir.:", launchDirectory);
 
-  const exePath = process.execPath;
+  const exePath = app.getPath("exe");
   console.log("Executable Path:", exePath);
 
   const mainWindow = initiateMainWindow();

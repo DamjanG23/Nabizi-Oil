@@ -83,7 +83,7 @@ export function setupDataHandelers(
     if (regularUpdateData.isRegularUpdateEnabled) {
       createScheduledTask(time, exePath);
     } else {
-      removeScheduledTask(exePath);
+      removeScheduledTask();
     }
     sendRegularUpdateData(regularUpdateData, mainWindow);
   });
