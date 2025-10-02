@@ -49,7 +49,7 @@ export async function createScheduledTask(
 
   try {
     if (platform === "win32") {
-      const createCmd = `schtasks /Create /SC DAILY /TN "${taskName}" /TR "\\"${exePath}\\" screenAutoUpdate" /ST ${time} /F`;
+      const createCmd = `schtasks /Create /SC DAILY /TN "${taskName}" /TR "\\"${exePath}\\" --screenAutoUpdate" /ST ${time} /F`;
 
       return new Promise((resolve) => {
         exec(createCmd, (err, stdout, stderr) => {

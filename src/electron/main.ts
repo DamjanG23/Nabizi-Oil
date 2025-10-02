@@ -1,4 +1,4 @@
-import { app } from "electron";
+import { app, dialog } from "electron";
 import { initiateMainWindow } from "./windows/mainWindow.js";
 import { setupIPC } from "./ipc/ipcManager.js";
 import { createMenu } from "./windows/menu.js";
@@ -13,6 +13,12 @@ import {
 import { isUpdateSchedulerActive } from "./services/regularUpdateService.js";
 
 app.on("ready", async () => {
+  const args = process.argv.slice(1);
+  console.log("argv:", args);
+  const hasScreenAutoUpdate = args.includes("--screenAutoUpdate");
+
+  console.log("screenAutoUpdate flag detected:", hasScreenAutoUpdate);
+
   const savedIsSchedulerEnabled = getIsRegularUpdateEnabled();
   console.log("savedIsSchedulerEnabled: ", savedIsSchedulerEnabled);
   const isSchedulerActive = await isUpdateSchedulerActive();
@@ -52,6 +58,15 @@ app.on("ready", async () => {
   console.log("Current Fuel Items:", initialFuelItems);
 
   createMenu(mainWindow);
+
+  dialog.showMessageBoxSync({
+    type: "info",
+    title: "Screen Auto Update",
+    message: hasScreenAutoUpdate
+      ? "App started with --screenAutoUpdate!"
+      : "App not started with --screenAutoUpdate!",
+    buttons: ["OK"],
+  });
 
   setupIPC(
     mainWindow,
