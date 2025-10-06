@@ -1,25 +1,7 @@
 const electron = require("electron");
 
 electron.contextBridge.exposeInMainWorld("electron", {
-  getConfig: () => {
-    return ipcInvoke("getConfig");
-  },
-
-  createNewMatch: (matchName) => {
-    ipcSend("createNewMatch", matchName);
-  },
-
-  // REAL FUNCTIONS ----------------------------------------------------------
-
-  onFuelItemsLoaded: (callback) =>
-    ipcOn("onFuelItemsLoaded", (fuelItems) => {
-      callback(fuelItems);
-    }),
-
-  loadConfig: () => {
-    return ipcInvoke("loadConfig");
-  },
-
+  // ------------------------------ CONFIG PATH ------------------------------ //
   getConfigPath: () => {
     return ipcInvoke("getConfigPath");
   },
@@ -37,20 +19,26 @@ electron.contextBridge.exposeInMainWorld("electron", {
     return ipcInvoke("setConfigPathToDefault");
   },
 
+  // ------------------------------ CONFIG DATA ------------------------------ //
+
   getLogoBase64: () => {
     return ipcInvoke("getLogoBase64");
   },
+
+  // ------------------------------ FUEL ITEMS ------------------------------ //
 
   getFuelItems: () => {
     return ipcInvoke("getFuelItems");
   },
 
-  sendDataToScreen: (fuelItems) => {
-    ipcSend("sendDataToScreen", fuelItems);
-  },
-
   saveFuelItems: (fuelItems) => {
     ipcSend("saveFuelItems", fuelItems);
+  },
+
+  // ------------------------------ SCREEN DATA ------------------------------ //
+
+  sendDataToScreen: (fuelItems) => {
+    ipcSend("sendDataToScreen", fuelItems);
   },
 
   // ------------- REGULAR UPDATE ----------------------

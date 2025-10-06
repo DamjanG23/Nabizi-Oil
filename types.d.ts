@@ -1,13 +1,3 @@
-type Match = {
-  matchName: string;
-};
-
-type MatchConfig = {
-  config: string;
-};
-
-// --------------------------------------------
-
 type Config = {
   displayIpAddress?: string;
   gasStationLogo?: string;
@@ -42,24 +32,27 @@ type RegularUpdateData = {
 };
 
 type EventPayloadMaping = {
-  getConfig: MatchConfig;
-  createNewMatch: string;
-
-  // ------------------------------------
-
-  onFuelItemsLoaded: FuelItem[];
-  loadConfig: void;
+  // ------------------------------ CONFIG PATH ------------------------------ //
   getConfigPath: string | null;
   selectConfigPath: void;
   onConfigPathChanged: string;
   setConfigPathToDefault: void;
-  getLogoBase64: string | null;
-  getFuelItems: FuelItem[];
-  sendDataToScreen: FuelItem[];
-  saveFuelItems: FuelItem[];
-  regularUpdateData: RegularUpdateData;
 
-  // REGULAR UPDATE ----------------------------------
+  // ------------------------------ CONFIG DATA ------------------------------ //
+
+  getLogoBase64: string | null;
+
+  // ------------------------------ FUEL ITEMS ------------------------------ //
+
+  getFuelItems: FuelItem[];
+  saveFuelItems: FuelItem[];
+
+  // ------------------------------ SCREEN DATA ------------------------------ //
+
+  sendDataToScreen: FuelItem[];
+
+  // ------------------------------ REGULAR UPDATE ------------------------------ //
+  regularUpdateData: RegularUpdateData;
   getRegularUpdateData: RegularUpdateData;
   toggleRegularUpdate: void;
   setRegularUpdateTime: string;
@@ -69,17 +62,7 @@ type UnsubscribeFunction = () => void;
 
 interface Window {
   electron: {
-    getConfig: () => Promise<MatchConfig>;
-
-    createNewMatch: (matchName: string) => void;
-
-    // Real Functions ----------------------------------------------------------------------------
-    onFuelItemsLoaded: (
-      callback: (fuelItems: FuelItem[]) => void
-    ) => UnsubscribeFunction;
-
-    loadConfig: () => Promise<void>;
-
+    // ------------------------------ CONFIG PATH ------------------------------ //
     getConfigPath: () => Promise<string | null>;
 
     selectConfigPath: () => Promise<void>;
@@ -90,15 +73,21 @@ interface Window {
 
     setConfigPathToDefault: () => Promise<void>;
 
+    // ------------------------------ CONFIG DATA ------------------------------ //
+
     getLogoBase64: () => Promise<string | null>;
+
+    // ------------------------------ FUEL ITEMS ------------------------------ //
 
     getFuelItems: () => Promise<FuelItem[]>;
 
-    sendDataToScreen: (fuelItems: FuelItem[]) => void;
-
     saveFuelItems: (fuelItems: FuelItem[]) => void;
 
-    // Regular Update Data ---------------------------------------
+    // ------------------------------ SCREEN DATA ------------------------------ //
+
+    sendDataToScreen: (fuelItems: FuelItem[]) => void;
+
+    // ------------------------------ REGULAR UPDATE ------------------------------ //
     regularUpdateData: (
       callback: (regularUpdateData: RegularUpdateData) => void
     ) => UnsubscribeFunction;

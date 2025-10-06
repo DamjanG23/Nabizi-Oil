@@ -1,13 +1,10 @@
 import { BrowserWindow } from "electron";
 import {
-  createNewMatch,
-  getConfig,
   getConfigPath,
   getFuelItems,
   getLogoBase64,
   getRegularUpdateData,
   getRegularUpdateTime,
-  loadConfig,
   saveFuelItems,
   selectConfigPath,
   sendRegularUpdateData,
@@ -29,18 +26,7 @@ export function setupDataHandelers(
   launchDirectory: string,
   initialFuelItems: FuelItem[]
 ) {
-  ipcMainHandle("getConfig", () => {
-    return getConfig();
-  });
-
-  ipcMainHandle("loadConfig", () => {
-    return loadConfig(mainWindow);
-  });
-
-  ipcMainOn("createNewMatch", (matchName) => {
-    createNewMatch(matchName);
-  });
-
+  // ------------------------------ CONFIG PATH ------------------------------ //
   ipcMainHandle("getConfigPath", () => {
     return getConfigPath(undefined);
   });
@@ -53,24 +39,30 @@ export function setupDataHandelers(
     return setConfigPathToDefault(mainWindow, launchDirectory);
   });
 
+  // ------------------------------ CONFIG DATA ------------------------------ //
+
   ipcMainHandle("getLogoBase64", () => {
     return getLogoBase64(configDirPath, config.gasStationLogo);
   });
 
+  // ------------------------------ FUEL ITEMS ------------------------------ //
+
   ipcMainHandle("getFuelItems", () => {
     return getFuelItems(initialFuelItems);
-  });
-
-  ipcMainOn("sendDataToScreen", (fuelItems) => {
-    saveFuelItems(fuelItems);
-    sendDataToScreen(fuelItems, config);
   });
 
   ipcMainOn("saveFuelItems", (fuelItems) => {
     saveFuelItems(fuelItems);
   });
 
-  // REGULAR UPDATE -----------------------------------------------
+  // ------------------------------ SCREEN DATA ------------------------------ //
+
+  ipcMainOn("sendDataToScreen", (fuelItems) => {
+    saveFuelItems(fuelItems);
+    sendDataToScreen(fuelItems, config);
+  });
+
+  // ------------------------------ REGULAR UPDATE ------------------------------ //
 
   ipcMainHandle("getRegularUpdateData", () => {
     return getRegularUpdateData();
@@ -89,6 +81,9 @@ export function setupDataHandelers(
 
   ipcMainOn("setRegularUpdateTime", (regularUpdateTime) => {
     const regularUpdateData = setRegularUpdateTime(regularUpdateTime);
+    if (regularUpdateData.isRegularUpdateEnabled) {
+      createScheduledTask(regularUpdateData.regularUpdateTime);
+    }
     sendRegularUpdateData(regularUpdateData, mainWindow);
   });
 }

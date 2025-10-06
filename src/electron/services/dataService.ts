@@ -13,40 +13,12 @@ if (!fs.existsSync(jsonDataPath)) {
 const CONFIG_PATH_FILE = path.join(jsonDataPath, "config-path.json");
 const SAVED_FUEL_ITEMS = path.join(jsonDataPath, "saved-fuel-items.json");
 
-export function getConfig() {
-  const config = "match config 123";
-  return { config };
-}
-
-export function createNewMatch(matchName: string) {
-  const newMatch: Match = { matchName: matchName };
-
-  console.log("Match ?saved? on back end:", newMatch);
-}
-
-export function loadConfig(window: BrowserWindow): void {
-  const config: Config = { gasStationLogo: "nabizilogo.png" };
-  console.log("Demo config loaded..." + JSON.stringify(config, null, 2));
-
-  const demoFuelList: FuelItem[] = [
-    { id: 1, name: "Gasoline", price: 3.45 },
-    { id: 2, name: "Diesel", price: 3.89 },
-    { id: 3, name: "Premium", price: 3.75 },
-    { id: 4, name: "E85", price: 2.95 },
-    { id: 5, name: "Kerosene", price: 4.2 },
-  ];
-
-  ipcWebContentsSend("onFuelItemsLoaded", window.webContents, demoFuelList);
-}
-
-// ----------------------------------------------------------------------------------------- //
+// ------------------------------ CONFIG PATH ------------------------------ //
 
 export function saveConfigPath(configPath: string): void {
   const data: ConfigPathData = { configPath };
 
   fs.writeFileSync(CONFIG_PATH_FILE, JSON.stringify(data, null, 2));
-
-  // ipcWebContentsSend("onConfigPathChanged", window.webContents, configPath);
   app.relaunch();
   app.exit();
 }
@@ -96,7 +68,7 @@ export function setConfigPathToDefault(
   return launchDirectory;
 }
 
-//--------------------------------------------------------------------------
+// ------------------------------ CONFIG DATA ------------------------------ //
 
 export async function readConfigFromDirectory(
   directoryPath: string
@@ -285,7 +257,7 @@ export function getFuelItems(fuelItems: FuelItem[]): FuelItem[] {
   return fuelItems;
 }
 
-// -----------------------------------------------------------------------------
+// ------------------------------ FUEL ITEMS ------------------------------ //
 
 export function saveFuelItems(fuelItems: FuelItem[] = []) {
   fs.writeFileSync(SAVED_FUEL_ITEMS, JSON.stringify(fuelItems, null, 2));
@@ -346,7 +318,7 @@ export function createCurrentFuelItems(
   return currentFuelItems;
 }
 
-// -------------------------------- REGULAR UPDATE ---------------------------------------------
+// ------------------------------ REGULAR UPDATE ------------------------------ //
 
 const REGULAR_UPDATE = path.join(jsonDataPath, "regular-update.json");
 
