@@ -1,32 +1,14 @@
 import { spawn } from "child_process";
 import path from "path";
 import { fileURLToPath } from "url";
-// Import the 'app' module from Electron
 import { app } from "electron";
 
-// NOTE: Make sure you have your type definitions for FuelItem and Config here
-// For example:
 type Config = {
   displayIpAddress?: string;
-  // ... other config properties
 };
 
-type FuelItem = {
-  id: number;
-  name: string;
-  price: number;
-};
-
-/**
- * Spawns the C++ wrapper, sends a JSON payload to it, and waits for its response.
- * @param jsonPayload The full configuration and data as a JSON string.
- * @returns A promise that resolves with the wrapper's success status.
- */
 function sendPayloadToWrapper(jsonPayload: string): Promise<boolean> {
   return new Promise((resolve, reject) => {
-    // --- Dynamic path for the wrapper executable ---
-
-    // app.isPackaged is true when the app is running from a packaged file (e.g., an .exe)
     const isProduction = app.isPackaged;
     let wrapperPath;
 
@@ -54,9 +36,7 @@ function sendPayloadToWrapper(jsonPayload: string): Promise<boolean> {
 
     console.log("Spawning wrapper with payload...");
 
-    // --- CHANGE START: Renamed 'process' to 'childProcess' to avoid conflict ---
     const childProcess = spawn(wrapperPath);
-    // --- CHANGE END ---
     let output = "";
     let errorOutput = "";
 
@@ -121,11 +101,6 @@ function sendPayloadToWrapper(jsonPayload: string): Promise<boolean> {
   });
 }
 
-/**
- * The main function to prepare and send data to the screen.
- * @param fuelItems An array of fuel items.
- * @param config The application configuration.
- */
 export async function sendDataToScreen(
   fuelItems: FuelItem[],
   config: Config

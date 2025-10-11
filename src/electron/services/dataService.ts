@@ -253,11 +253,11 @@ export function getLogoBase64(
   }
 }
 
+// ------------------------------ FUEL ITEMS ------------------------------ //
+
 export function getFuelItems(fuelItems: FuelItem[]): FuelItem[] {
   return fuelItems;
 }
-
-// ------------------------------ FUEL ITEMS ------------------------------ //
 
 export function saveFuelItems(fuelItems: FuelItem[] = []) {
   fs.writeFileSync(SAVED_FUEL_ITEMS, JSON.stringify(fuelItems, null, 2));
