@@ -64,24 +64,19 @@ export function SettingsDrawer({
           </label>
         </div>
 
-        <div className="setting-option">
-          <label>
-            Update Time (
+        <div
+          className="setting-option clickable-option"
+          onClick={() => {
+            setIsTimeDialogOpen(true);
+            setIsDrawerOpen(false);
+          }}
+        >
+          <label>Update Time</label>
+          <span className="time-display">
             {regularUpdateData.isRegularUpdateEnabled
               ? regularUpdateData.regularUpdateTime
               : "--:--"}
-            )
-          </label>
-          <button
-            className="config-time-button"
-            // disabled={!regularUpdateData?.isRegularUpdateEnabled}
-            onClick={() => {
-              setIsTimeDialogOpen(true);
-              setIsDrawerOpen(false);
-            }}
-          >
-            Set Time
-          </button>
+          </span>
         </div>
       </div>
     </>

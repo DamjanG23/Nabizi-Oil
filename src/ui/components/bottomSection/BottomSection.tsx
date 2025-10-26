@@ -47,12 +47,14 @@ export function BottomSection({ fuelList }: BottomSectionProps) {
   return (
     <>
       <div className="send-section">
-        <button className="send-button" onClick={handleSave}>
-          Save
-        </button>
-        <button className="send-button" onClick={handleSend}>
-          Save & Send
-        </button>
+        <div className="action-buttons">
+          <button className="send-button" onClick={handleSave}>
+            Save
+          </button>
+          <button className="send-button" onClick={handleSend}>
+            Save & Send
+          </button>
+        </div>
         <button
           className="settings-button"
           onClick={() => setIsDrawerOpen(true)}
