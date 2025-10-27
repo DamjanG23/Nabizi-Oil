@@ -32,6 +32,7 @@ typedef int (__stdcall *HD_AddProgram)(void*, int, int, void*, int);
 typedef int (__stdcall *HD_AddArea)(int, int, int, int, int, void*, int, int, void*, int);
 typedef int (__stdcall *HD_AddSimpleTextAreaItem)(int, void*, int, int, int, void*, int, int, int, int, int, void*, int);
 typedef int (__stdcall *HD_SendScreen)(int, void*, void*, void*, int);
+typedef int (__stdcall *HD_Cmd_AdjustTime)(int, void*, void*);
 
 // ------------------------------ Main Cpp Application ------------------------------ //
 int main() {
@@ -82,6 +83,10 @@ int main() {
         std::string rowColumn_str = config.value("rowColumn", "R");
         std::string doubleSided_str = config.value("doubleSided", "N");
         bool isDoubleSided = (doubleSided_str == "Y" || doubleSided_str == "y");
+        
+        // ---------- Time display parameters ---------- //
+        std::string timeDisplayIpAddress_str = config.value("timeDisplayIpAddress", "");
+        std::string adjustTime_str = config.value("adjustTime", "N");
 
         // ---------- Screen dimensions and font settings ---------- //
         int nWidth = config["screenWidth"];
@@ -96,7 +101,9 @@ int main() {
                    << L", Layout=" << std::wstring(rowColumn_str.begin(), rowColumn_str.end())
                    << L", DoubleSided=" << (isDoubleSided ? L"true" : L"false")
                    << L", Width=" << nWidth
-                   << L", Height=" << nHeight << std::endl;
+                   << L", Height=" << nHeight
+                   << L", TimeDisplayIP=" << std::wstring(timeDisplayIpAddress_str.begin(), timeDisplayIpAddress_str.end())
+                   << L", AdjustTime=" << std::wstring(adjustTime_str.begin(), adjustTime_str.end()) << std::endl;
 
         // ---------- Extract array of fuel items ---------- //
         auto& fuelItems = data["fuelItems"];
@@ -125,6 +132,7 @@ int main() {
         HD_AddArea Hd_AddArea_ptr = (HD_AddArea)GetProcAddress(hDll, "Hd_AddArea");
         HD_AddSimpleTextAreaItem Hd_AddSimpleTextAreaItem_ptr = (HD_AddSimpleTextAreaItem)GetProcAddress(hDll, "Hd_AddSimpleTextAreaItem");
         HD_SendScreen Hd_SendScreen_ptr = (HD_SendScreen)GetProcAddress(hDll, "Hd_SendScreen");
+        HD_Cmd_AdjustTime Cmd_AdjustTime_ptr = (HD_Cmd_AdjustTime)GetProcAddress(hDll, "Cmd_AdjustTime");
 
         // ---------- Log resolved pointers for debugging ---------- //
         std::wcout << L"[DEBUG] Function pointers resolved:" << std::endl;
@@ -134,6 +142,7 @@ int main() {
         std::wcout << L"  Hd_AddArea_ptr=" << (void*)Hd_AddArea_ptr << std::endl;
         std::wcout << L"  Hd_AddSimpleTextAreaItem_ptr=" << (void*)Hd_AddSimpleTextAreaItem_ptr << std::endl;
         std::wcout << L"  Hd_SendScreen_ptr=" << (void*)Hd_SendScreen_ptr << std::endl;
+        std::wcout << L"  Cmd_AdjustTime_ptr=" << (void*)Cmd_AdjustTime_ptr << std::endl;
 
         // ---------- Ensure all functions were found ---------- //
         if (!Hd_GetSDKLastError_ptr || !Hd_CreateScreen_ptr || !Hd_AddProgram_ptr ||
@@ -141,6 +150,13 @@ int main() {
             throw std::runtime_error("Failed to get one or more function pointers.");
         }
         std::wcout << L"[DEBUG] All required function pointers successfully retrieved." << std::endl;
+        
+        // ---------- Check optional function pointers ---------- //
+        if (!Cmd_AdjustTime_ptr) {
+            std::wcout << L"[WARNING] Cmd_AdjustTime function not found in DLL. Time adjustment feature will not be available." << std::endl;
+        } else {
+            std::wcout << L"[DEBUG] Cmd_AdjustTime function available." << std::endl;
+        }
 
         // ---------- Determine total layout size based on orientation and double-sidedness ---------- //
         int totalWidth, totalHeight;
@@ -231,25 +247,70 @@ int main() {
         // ------------------------------ Send final screen data to the LED display device ------------------------------ //
         std::wcout << L"[DEBUG] Preparing to send screen data to device..." << std::endl;
         std::wcout << L"[LOG] Attempting to send to screen at " << ip_address_ws << L"..." << std::endl;
+        bool sendScreenSuccess = false;
         if (Hd_SendScreen_ptr(0, (void*)ip_address_ws.c_str(), nullptr, nullptr, 0) != 0) {
-            // If sending fails, log error code and possible hint
+            // If sending fails, log error code and possible hint but continue execution
             int errorCode = Hd_GetSDKLastError_ptr();
-            std::string errorMsg = "Hd_SendScreen failed with code: " + std::to_string(errorCode);
+            std::wcout << L"[WARNING] Hd_SendScreen failed with code: " << errorCode;
             if (errorCode == 13) {
-                errorMsg += ". HINT: This is a timeout error. Check if the device is powered on, connected to the network, and that the IP address is correct. Also check for firewalls.";
+                std::wcout << L". HINT: This is a timeout error. Check if the device is powered on, connected to the network, and that the IP address is correct. Also check for firewalls.";
             }
-            throw std::runtime_error(errorMsg);
+            std::wcout << std::endl;
+            sendScreenSuccess = false;
+        } else {
+            std::wcout << L"[LOG] Hd_SendScreen appears to have succeeded." << std::endl;
+            sendScreenSuccess = true;
         }
-        std::wcout << L"[LOG] Hd_SendScreen appears to have succeeded." << std::endl;
+
+        // ------------------------------ Adjust time on time display if requested ------------------------------ //
+        bool adjustTimeSuccess = false;
+        if (adjustTime_str == "Y" || adjustTime_str == "y") {
+            std::wcout << L"[DEBUG] AdjustTime is enabled. Attempting to adjust time on time display..." << std::endl;
+            
+            if (!Cmd_AdjustTime_ptr) {
+                std::wcout << L"[WARNING] Cannot adjust time: Cmd_AdjustTime function not available in DLL." << std::endl;
+            } else if (timeDisplayIpAddress_str.empty()) {
+                std::wcout << L"[WARNING] Cannot adjust time: TimeDisplayIP is empty." << std::endl;
+            } else {
+                // Convert time display IP to wide string
+                std::wstring timeDisplayIp_ws(timeDisplayIpAddress_str.begin(), timeDisplayIpAddress_str.end());
+                std::wcout << L"[LOG] Attempting to adjust time on display at " << timeDisplayIp_ws << L"..." << std::endl;
+                
+                if (Cmd_AdjustTime_ptr(0, (void*)timeDisplayIp_ws.c_str(), nullptr) != 0) {
+                    // If time adjustment fails, log error but don't throw (non-critical)
+                    int errorCode = Hd_GetSDKLastError_ptr();
+                    std::wcout << L"[WARNING] Cmd_AdjustTime failed with code: " << errorCode;
+                    if (errorCode == 13) {
+                        std::wcout << L". HINT: Timeout - check if time display is powered on, connected, and IP is correct.";
+                    }
+                    std::wcout << std::endl;
+                    adjustTimeSuccess = false;
+                } else {
+                    std::wcout << L"[LOG] Cmd_AdjustTime succeeded. Time display synchronized with system time." << std::endl;
+                    adjustTimeSuccess = true;
+                }
+            }
+        } else {
+            std::wcout << L"[DEBUG] AdjustTime is disabled (value: " << std::wstring(adjustTime_str.begin(), adjustTime_str.end()) << L"). Skipping time adjustment." << std::endl;
+            adjustTimeSuccess = true; // Not requested, so count as "success"
+        }
 
         // ---------- Unload DLL from memory ---------- //
         std::wcout << L"[DEBUG] Freeing DLL library..." << std::endl;
         FreeLibrary(hDll);
         std::wcout << L"[DEBUG] DLL successfully unloaded." << std::endl;
 
-        // ---------- Output final success message in JSON format ---------- //
-        std::wcout << L"{\"success\": true, \"message\": \"Screen data sent successfully.\"}" << std::endl;
-        std::wcout << L"[DEBUG] Try block completed successfully." << std::endl;
+        // ---------- Output final status message in JSON format ---------- //
+        if (sendScreenSuccess && adjustTimeSuccess) {
+            std::wcout << L"{\"success\": true, \"message\": \"Screen data sent and time adjusted successfully.\", \"sendScreen\": true, \"adjustTime\": true}" << std::endl;
+        } else if (sendScreenSuccess && !adjustTimeSuccess) {
+            std::wcout << L"{\"success\": true, \"message\": \"Screen data sent successfully, but time adjustment failed.\", \"sendScreen\": true, \"adjustTime\": false}" << std::endl;
+        } else if (!sendScreenSuccess && adjustTimeSuccess) {
+            std::wcout << L"{\"success\": true, \"message\": \"Screen send failed, but time adjustment succeeded.\", \"sendScreen\": false, \"adjustTime\": true}" << std::endl;
+        } else {
+            std::wcout << L"{\"success\": false, \"message\": \"Both screen send and time adjustment failed.\", \"sendScreen\": false, \"adjustTime\": false}" << std::endl;
+        }
+        std::wcout << L"[DEBUG] Try block completed." << std::endl;
 
     } catch (const std::exception& e) {
         // ---------- Catch and report any exceptions during processing ---------- //
