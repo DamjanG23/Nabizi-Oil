@@ -7,7 +7,7 @@ type Config = {
   displayIpAddress?: string;
 };
 
-function sendPayloadToWrapper(jsonPayload: string): Promise<boolean> {
+function sendPayloadToWrapper(jsonPayload: string): Promise<string> {
   return new Promise((resolve, reject) => {
     const isProduction = app.isPackaged;
     let wrapperPath;
@@ -53,8 +53,6 @@ function sendPayloadToWrapper(jsonPayload: string): Promise<boolean> {
     });
 
     childProcess.on("close", (code) => {
-      console.log("--- Raw C++ Output ---\n", output);
-
       if (code !== 0) {
         reject(
           new Error(
@@ -73,7 +71,7 @@ function sendPayloadToWrapper(jsonPayload: string): Promise<boolean> {
 
         if (result.success) {
           console.log("✅ Wrapper success:", result.message);
-          resolve(true);
+          resolve(output);
         } else {
           console.error(
             "❌ Wrapper error:",
@@ -81,7 +79,7 @@ function sendPayloadToWrapper(jsonPayload: string): Promise<boolean> {
             "Details:",
             result.details || "N/A"
           );
-          resolve(false);
+          resolve(output);
         }
       } catch {
         reject(
@@ -104,10 +102,10 @@ function sendPayloadToWrapper(jsonPayload: string): Promise<boolean> {
 export async function sendDataToScreen(
   fuelItems: FuelItem[],
   config: Config
-): Promise<void> {
+): Promise<string> {
   if (!config.displayIpAddress) {
     console.error("❌ No displayIpAddress provided in config.");
-    return;
+    return "";
   }
 
   const payload = {
@@ -118,8 +116,10 @@ export async function sendDataToScreen(
   const jsonPayload = JSON.stringify(payload);
 
   try {
-    await sendPayloadToWrapper(jsonPayload);
+    const output = await sendPayloadToWrapper(jsonPayload);
+    return output;
   } catch (error) {
     console.error("Error calling screen sender:", error);
+    return "Error calling screen sender:" + error;
   }
 }

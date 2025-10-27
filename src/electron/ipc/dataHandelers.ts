@@ -1,4 +1,4 @@
-import { BrowserWindow } from "electron";
+import { BrowserWindow, dialog } from "electron";
 import {
   getConfigPath,
   getFuelItems,
@@ -57,9 +57,16 @@ export function setupDataHandelers(
 
   // ------------------------------ SCREEN DATA ------------------------------ //
 
-  ipcMainOn("sendDataToScreen", (fuelItems) => {
+  ipcMainOn("sendDataToScreen", async (fuelItems) => {
     saveFuelItems(fuelItems);
-    sendDataToScreen(fuelItems, config);
+    const output = await sendDataToScreen(fuelItems, config);
+    dialog.showMessageBoxSync({
+      type: "info",
+      title: "C++ Output",
+      message: "Raw Output:",
+      detail: output,
+      buttons: ["OK"],
+    });
   });
 
   // ------------------------------ REGULAR UPDATE ------------------------------ //

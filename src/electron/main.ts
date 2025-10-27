@@ -11,7 +11,7 @@ import {
   setIsRegularUpdateEnabled,
 } from "./services/dataService.js";
 import { isUpdateSchedulerActive } from "./services/regularUpdateService.js";
-// import { sendDataToScreen } from "./services/screenService.js";
+import { sendDataToScreen } from "./services/screenService.js";
 
 app.on("ready", async () => {
   // ------------------------------ Check what flag the exe has been called with ------------------------------ //
@@ -48,12 +48,13 @@ app.on("ready", async () => {
   // ------------------------------ If the app has been called with a --screenAutoUpdate flag than skip windows and just send data to screen ------------------------------ //
 
   if (hasScreenAutoUpdateFlag) {
-    //TODO: call the screen update function
-    //sendDataToScreen(savedFuelItems, config);
+    const output = await sendDataToScreen(savedFuelItems, config);
+
     dialog.showMessageBoxSync({
       type: "info",
-      title: "Screen Auto Update",
-      message: "App started with --screenAutoUpdate flag!",
+      title: "C++ Output",
+      message: "Raw Output:",
+      detail: output,
       buttons: ["OK"],
     });
     app.quit();
