@@ -36,7 +36,7 @@ app.on("ready", async () => {
   const configDirPath = getConfigPath(launchDirectory);
   console.log("Config Dir Path loaded:", configDirPath);
 
-  const config = await readConfigFromDirectory(configDirPath);
+  const config: Config = await readConfigFromDirectory(configDirPath);
 
   console.log("Config loaded:", config);
 

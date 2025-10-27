@@ -3,10 +3,6 @@ import path from "path";
 import { fileURLToPath } from "url";
 import { app } from "electron";
 
-type Config = {
-  displayIpAddress?: string;
-};
-
 function sendPayloadToWrapper(jsonPayload: string): Promise<string> {
   return new Promise((resolve, reject) => {
     const isProduction = app.isPackaged;
@@ -62,11 +58,18 @@ function sendPayloadToWrapper(jsonPayload: string): Promise<string> {
         return;
       }
       try {
+        // Log the full raw output for debugging
+        console.log("=== WRAPPER FULL OUTPUT ===");
+        console.log(output);
+        console.log("=== END WRAPPER OUTPUT ===");
+
         const jsonResponses = output
           .trim()
           .split("\n")
           .filter((s) => s.startsWith("{"));
         const lastResponse = jsonResponses[jsonResponses.length - 1];
+
+        console.log("Last JSON response:", lastResponse);
         const result = JSON.parse(lastResponse);
 
         if (result.success) {
@@ -79,9 +82,11 @@ function sendPayloadToWrapper(jsonPayload: string): Promise<string> {
             "Details:",
             result.details || "N/A"
           );
+          console.error("Full result object:", JSON.stringify(result, null, 2));
           resolve(output);
         }
-      } catch {
+      } catch (parseError) {
+        console.error("Failed to parse wrapper output:", parseError);
         reject(
           new Error(
             "Failed to parse wrapper JSON output. Raw output: " + output

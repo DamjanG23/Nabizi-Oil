@@ -92,12 +92,14 @@ int main() {
         int nWidth = config["screenWidth"];
         int nHeight = config["screenHeight"];
         int nFontHeight = config["fontHeight"];
+        int nDecimalFontHeight = config.value("decimalFontHeight", nFontHeight); // Default to regular font height if not specified
 
         // ---------- Log parsed configuration details ---------- //
         std::wcout << L"[DEBUG] Config parsed: IP=" << std::wstring(ip_address_str.begin(), ip_address_str.end())
                    << L", CardType=" << std::wstring(cardType_str.begin(), cardType_str.end())
                    << L", Font=" << std::wstring(fontName_str.begin(), fontName_str.end())
                    << L", FontHeight=" << nFontHeight
+                   << L", DecimalFontHeight=" << nDecimalFontHeight
                    << L", Layout=" << std::wstring(rowColumn_str.begin(), rowColumn_str.end())
                    << L", DoubleSided=" << (isDoubleSided ? L"true" : L"false")
                    << L", Width=" << nWidth
